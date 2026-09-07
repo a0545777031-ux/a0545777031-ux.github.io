@@ -1,0 +1,968 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f6b5c">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<title>دفتر الإيجارات</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#f4f6f5;
+  --surface:#ffffff;
+  --surface-2:#eceef0;
+  --ink:#15201e;
+  --ink-2:#4a5a57;
+  --ink-3:#7c8c89;
+  --line:#dde2e1;
+  --accent:#0f6b5c;
+  --accent-soft:#e2efec;
+  --accent-ink:#0b5148;
+  --on-accent:#ffffff;
+  --warn:#a8701a;
+  --warn-soft:#f8eedd;
+  --danger:#a53a2f;
+  --danger-soft:#f9e6e3;
+  --ok:#2e6b46;
+  --ok-soft:#e3efe8;
+  --shadow:0 1px 2px rgba(21,32,30,.06),0 8px 24px rgba(21,32,30,.06);
+  --r:12px;
+}
+:root:not([data-theme="light"]){}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101816;
+    --surface:#17211f;
+    --surface-2:#1f2b28;
+    --ink:#e8efec;
+    --ink-2:#a8bab5;
+    --ink-3:#7b8d89;
+    --line:#27332f;
+    --accent:#4fc0a8;
+    --accent-soft:#16302b;
+    --accent-ink:#7fd6c2;
+    --on-accent:#08201c;
+    --warn:#d9a45c;
+    --warn-soft:#2e2418;
+    --danger:#e08376;
+    --danger-soft:#331e1b;
+    --ok:#6fbd8e;
+    --ok-soft:#182a20;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101816; --surface:#17211f; --surface-2:#1f2b28;
+  --ink:#e8efec; --ink-2:#a8bab5; --ink-3:#7b8d89; --line:#27332f;
+  --accent:#4fc0a8; --accent-soft:#16302b; --accent-ink:#7fd6c2; --on-accent:#08201c;
+  --warn:#d9a45c; --warn-soft:#2e2418;
+  --danger:#e08376; --danger-soft:#331e1b;
+  --ok:#6fbd8e; --ok-soft:#182a20;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:"IBM Plex Sans Arabic","Segoe UI",system-ui,sans-serif;
+  font-size:15px;line-height:1.6;direction:rtl;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:"Readex Pro","IBM Plex Sans Arabic",sans-serif;font-weight:500;margin:0;text-wrap:balance}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.num{font-variant-numeric:tabular-nums}
+
+/* shell */
+.shell{display:grid;grid-template-columns:236px 1fr;min-height:100vh}
+.side{background:var(--surface);border-inline-start:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh}
+.brand{padding:6px 10px 18px;display:flex;align-items:baseline;gap:8px}
+.brand b{font-family:"Readex Pro",sans-serif;font-weight:600;font-size:19px;letter-spacing:-.2px}
+.brand span{font-size:11px;color:var(--ink-3);letter-spacing:.06em}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;align-items:center;gap:10px;background:none;border:0;padding:9px 11px;border-radius:9px;cursor:pointer;color:var(--ink-2);text-align:right;width:100%;transition:background .15s,color .15s}
+.nav button:hover{background:var(--surface-2)}
+.nav button[aria-current="true"]{background:var(--accent-soft);color:var(--accent-ink);font-weight:600}
+.nav .ic{width:18px;text-align:center;opacity:.9}
+.side-foot{margin-top:auto;font-size:12px;color:var(--ink-3);padding:10px;display:flex;flex-direction:column;gap:8px}
+.sync{display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ink-3);flex:none}
+.dot.on{background:var(--ok)}
+main{padding:26px 30px 90px;max-width:1180px}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.head h1{font-size:25px}
+.head p{margin:4px 0 0;color:var(--ink-3);font-size:13.5px}
+
+/* buttons */
+.btn{background:var(--accent);color:var(--on-accent);border:0;padding:9px 16px;border-radius:9px;cursor:pointer;font-weight:600;font-size:14px;transition:filter .15s}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--ink-2);border:1px solid var(--line)}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.sm{padding:5px 11px;font-size:13px;font-weight:500;border-radius:7px}
+
+/* tiles */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:22px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:15px 16px}
+.tile .lbl{font-size:11.5px;letter-spacing:.07em;color:var(--ink-3);text-transform:none}
+.tile .val{font-family:"Readex Pro",sans-serif;font-size:26px;font-weight:500;margin-top:5px;letter-spacing:-.5px}
+.tile .sub{font-size:12.5px;color:var(--ink-3);margin-top:2px}
+.tile.alert{border-color:color-mix(in srgb,var(--danger) 40%,var(--line))}
+.tile.alert .val{color:var(--danger)}
+
+/* panels & tables */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:20px}
+.panel>header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;border-bottom:1px solid var(--line)}
+.panel>header h2{font-size:15.5px;font-weight:600;font-family:"IBM Plex Sans Arabic",sans-serif}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:right;font-weight:600;font-size:11.5px;letter-spacing:.05em;color:var(--ink-3);padding:9px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:11px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--surface-2)}
+td.wide{white-space:normal;min-width:160px}
+.empty{padding:34px 16px;text-align:center;color:var(--ink-3);font-size:13.5px}
+
+/* pills */
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--danger-soft);color:var(--danger)}
+.pill.mute{background:var(--surface-2);color:var(--ink-3)}
+.pill.acc{background:var(--accent-soft);color:var(--accent-ink)}
+
+/* occupancy bar */
+.occ{display:flex;height:9px;border-radius:999px;overflow:hidden;background:var(--surface-2);margin-top:10px}
+.occ i{display:block;height:100%}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);margin-top:10px}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:9px;height:9px;border-radius:3px;display:block}
+
+/* form */
+.modal{position:fixed;inset:0;background:rgba(10,18,16,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal .box{background:var(--surface);border-radius:14px;box-shadow:var(--shadow);width:min(560px,100%);max-height:88vh;overflow:auto}
+.modal header{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.modal header h2{font-size:16px}
+.modal .body{padding:16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.modal footer{padding:14px 18px;border-top:1px solid var(--line);display:flex;gap:9px;justify-content:flex-start}
+.f{display:flex;flex-direction:column;gap:5px}
+.f.full{grid-column:1/-1}
+.f label{font-size:12.5px;color:var(--ink-2);font-weight:500}
+.f input,.f select,.f textarea{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+.f textarea{min-height:62px;resize:vertical}
+.x{background:none;border:0;font-size:20px;line-height:1;cursor:pointer;color:var(--ink-3);padding:2px 6px}
+
+.bar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.bar select,.bar input{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+.note{font-size:12.5px;color:var(--ink-3);padding:0 16px 14px}
+.rowact{display:flex;gap:6px}
+.linkbtn{background:none;border:0;color:var(--ink-3);cursor:pointer;font-size:13px;padding:2px 4px;border-radius:6px}
+.linkbtn:hover{color:var(--danger)}
+
+.banner{display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--warn-soft);color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 30%,transparent);border-radius:10px;padding:9px 14px;font-size:13px;margin-bottom:18px}
+
+/* mobile */
+.tabbar{display:none}
+@media (max-width:820px){
+  .shell{grid-template-columns:1fr}
+  .side{display:none}
+  main{padding:18px 14px 84px}
+  .head h1{font-size:21px}
+  .modal .body{grid-template-columns:1fr}
+  .tabbar{display:grid;grid-template-columns:repeat(6,1fr);position:fixed;inset-inline:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);z-index:40}
+  .tabbar button{background:none;border:0;padding:9px 2px 11px;font-size:10.5px;color:var(--ink-3);display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+  .tabbar button[aria-current="true"]{color:var(--accent)}
+  .tabbar .ic{font-size:16px}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+</head>
+<body>
+<div class="shell">
+  <aside class="side">
+    <div class="brand"><b>دفتر الإيجارات</b><span>إدارة الغرف والمحلات</span></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">
+      <div id="whoTxt" style="font-weight:600;color:var(--ink-2)"></div>
+      <div class="sync"><span class="dot" id="dot"></span><span id="syncTxt">جارٍ الاتصال…</span></div>
+      <button class="btn ghost sm" id="themeBtn">تبديل الوضع الليلي</button>
+      <button class="btn ghost sm" data-act="switch">خروج / تغيير الدور</button>
+    </div>
+  </aside>
+  <main id="view"></main>
+</div>
+<nav class="tabbar" id="tabbar"></nav>
+<div id="modalHost"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ---------- الحالة والتخزين ---------- */
+var COLS = ["units","tenants","contracts","payments","expenses","tickets","settings","log"];
+var S = {units:[],tenants:[],contracts:[],payments:[],expenses:[],tickets:[],settings:[],log:[]};
+var DB = null, tab = "dash", seeded = false;
+var ROLE = null;   // "manager" = المالك/المدير ، "viewer" = المستخدم المتابع
+try{ ROLE = localStorage.getItem("ijar-role") || null; }catch(e){}
+function isOwner(){ return ROLE === "manager"; }   // المالك: كل شيء + الحذف والإعدادات
+function RO(){ return false; }                     // المتابع يدخل ويعدّل — القيود على الحذف فقط
+var ROLE_AR = {manager:"المالك", viewer:"المتابع"};
+var COL_AR = {units:"وحدة", tenants:"مستأجر", contracts:"عقد", payments:"دفعة", expenses:"مصروف", tickets:"بلاغ"};
+function logAct(txt){
+  if(!txt) return;
+  var e = {id:uid("g"), ts:new Date().toISOString(), role:ROLE||"", txt:txt};
+  S.log.push(e);
+  if(DB) DB.collection("log").doc(e.id).set(e).catch(function(){});
+  if(S.log.length > 400){
+    var old = S.log.slice(0, S.log.length-400);
+    S.log = S.log.slice(-400);
+    if(DB) old.forEach(function(o){ DB.collection("log").doc(o.id).delete().catch(function(){}); });
+  }
+  if(!DB) lsSet();
+}
+/* الاعتماد: السجل يبدأ "مسودة" — بعد الاعتماد يُقفل ولا يعدّله المتابع إلا بموافقة المالك */
+function canEditRec(o){ return isOwner() || !o.locked; }
+function recActions(col, o, editAct, delAct){
+  var h = '<td class="rowact">';
+  if(!o.locked){
+    if(editAct) h += '<button class="linkbtn" data-act="'+editAct+'" data-id="'+o.id+'">تعديل</button>';
+    h += '<button class="btn ghost sm" data-act="lock" data-col="'+col+'" data-id="'+o.id+'">اعتماد</button>';
+  } else if(isOwner()){
+    if(o.unlockReq) h += '<button class="btn sm" data-act="approve" data-col="'+col+'" data-id="'+o.id+'">فتح للتعديل</button>';
+    else if(editAct) h += '<button class="linkbtn" data-act="'+editAct+'" data-id="'+o.id+'">تعديل</button>';
+  } else {
+    h += o.unlockReq ? '<span class="pill warn">بانتظار موافقة المالك</span>'
+                     : '<button class="btn ghost sm" data-act="req" data-col="'+col+'" data-id="'+o.id+'">طلب تعديل</button>';
+  }
+  if(isOwner() && delAct) h += '<button class="linkbtn" data-act="'+delAct+'" data-id="'+o.id+'">حذف</button>';
+  return h + '</td>';
+}
+function lockPill(o){
+  return o.locked ? '<span class="pill acc">معتمد</span>' : '<span class="pill mute">مسودة</span>';
+}
+function pendingReqs(){
+  var out = [];
+  ["units","tenants","contracts","expenses"].forEach(function(col){
+    S[col].forEach(function(o){ if(o.unlockReq) out.push({col:col, o:o}); });
+  });
+  return out;
+}
+function labelOf(col, obj){
+  if(col==="payments"){ var c=byId("contracts",obj.contractId), u=c?byId("units",c.unitId):null; return (u?u.name+" — ":"")+dstr(obj.dueDate); }
+  return obj.name || obj.body || obj.cat || obj.id;
+}
+function setRole(r){
+  ROLE = r;
+  try{ r ? localStorage.setItem("ijar-role", r) : localStorage.removeItem("ijar-role"); }catch(e){}
+  tab = "dash";
+  render();
+}
+function cfg(){ return S.settings.find(function(x){return x.id==="app";}) || {}; }
+function getPin(){ var p = cfg().pin; return p ? String(p) : ""; }
+function getVPin(){ var p = cfg().vpin; return p ? String(p) : ""; }
+function setPins(pin, vpin){
+  var c = cfg();
+  save("settings", {id:"app", pin:String(pin!=null?pin:(c.pin||"")), vpin:String(vpin!=null?vpin:(c.vpin||""))});
+}
+
+function uid(p){ return p + "-" + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function lsGet(){ try{ var r = localStorage.getItem("ijar-v1"); if(r){ var o = JSON.parse(r); COLS.forEach(function(c){ if(Array.isArray(o[c])) S[c]=o[c]; }); } }catch(e){} }
+function lsSet(){ try{ localStorage.setItem("ijar-v1", JSON.stringify(S)); }catch(e){} }
+
+var SKIP_LOG = false;
+function save(col, obj){
+  var a = S[col], i = a.findIndex(function(x){return x.id===obj.id;});
+  if(COL_AR[col] && !SKIP_LOG){
+    if(col==="payments") logAct((obj.paid?"سجّل سداد ":"ألغى سداد ")+labelOf(col,obj)+" — "+money(obj.amount));
+    else logAct((i<0?"أضاف ":"عدّل ")+COL_AR[col]+": "+labelOf(col,obj));
+  }
+  if(i<0) a.push(obj); else a[i]=obj;
+  if(DB){ DB.collection(col).doc(obj.id).set(obj).catch(function(e){ toast("تعذّر الحفظ في السحابة: "+e.code); }); }
+  else lsSet();
+  render();
+}
+function remove(col, id){
+  var o = byId(col, id);
+  if(COL_AR[col] && o && col!=="payments") logAct("حذف "+COL_AR[col]+": "+labelOf(col,o));
+  S[col] = S[col].filter(function(x){return x.id!==id;});
+  if(DB){ DB.collection(col).doc(id).delete().catch(function(){}); } else lsSet();
+  render();
+}
+function saveMany(col, arr){ arr.forEach(function(o){
+  var a=S[col], i=a.findIndex(function(x){return x.id===o.id;}); if(i<0)a.push(o); else a[i]=o;
+  if(DB) DB.collection(col).doc(o.id).set(o).catch(function(){});
+});
+  if(!DB) lsSet(); render();
+}
+
+/* ---------- أدوات ---------- */
+var SAR = new Intl.NumberFormat("ar-SA-u-nu-latn",{maximumFractionDigits:0});
+function money(n){ return SAR.format(Math.round(n||0)) + " ر.س"; }
+function today(){ return new Date().toISOString().slice(0,10); }
+function dstr(s){ if(!s) return "—"; var d=new Date(s+"T00:00:00"); return d.toLocaleDateString("ar-SA-u-ca-gregory-nu-latn",{year:"numeric",month:"short",day:"numeric"}); }
+function daysBetween(a,b){ return Math.round((new Date(b)-new Date(a))/86400000); }
+function addMonths(iso,m){ var d=new Date(iso+"T00:00:00"); var day=d.getDate(); d.setDate(1); d.setMonth(d.getMonth()+m); var last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate(); d.setDate(Math.min(day,last)); return d.toISOString().slice(0,10); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+function byId(col,id){ return S[col].find(function(x){return x.id===id;}) || null; }
+
+var CYCLE = {monthly:{label:"شهري",m:1}, quarterly:{label:"ربع سنوي",m:3}, semi:{label:"نصف سنوي",m:6}, yearly:{label:"سنوي",m:12}};
+var UTYPE = {room:"غرفة", shop:"محل تجاري", apt:"شقة", office:"مكتب"};
+var EXPCAT = ["صيانة","كهرباء ومياه","نظافة","رسوم بلدية","تأمين","أخرى"];
+
+function activeContract(unitId){
+  var t = today();
+  return S.contracts.find(function(c){ return c.unitId===unitId && c.start<=t && c.end>=t; }) || null;
+}
+function payStatus(p){
+  if(p.paid) return {k:"ok", t:"مسدّدة"};
+  var d = daysBetween(today(), p.dueDate);
+  if(d < 0) return {k:"bad", t:"متأخرة " + Math.abs(d) + " يوم"};
+  if(d <= 14) return {k:"warn", t:"تستحق خلال " + d + " يوم"};
+  return {k:"mute", t:"قادمة"};
+}
+function genSchedule(c){
+  var out=[], step = CYCLE[c.cycle].m, cur = c.start, n=0;
+  while(cur <= c.end && n < 120){
+    out.push({id:uid("p"), contractId:c.id, dueDate:cur, amount:Math.round(c.rent*step/12), paid:false, paidDate:""});
+    cur = addMonths(cur, step); n++;
+  }
+  return out;
+}
+
+/* ---------- بيانات تجريبية ---------- */
+function seed(){
+  var u = [
+    {id:"u-1", name:"محل رقم 1", type:"shop", building:"عمارة الروضة", area:48, rent:60000, note:"واجهة رئيسية"},
+    {id:"u-2", name:"محل رقم 2", type:"shop", building:"عمارة الروضة", area:36, rent:45000, note:""},
+    {id:"u-3", name:"غرفة 101", type:"room", building:"عمارة الروضة", area:18, rent:12000, note:"دور أول"},
+    {id:"u-4", name:"غرفة 102", type:"room", building:"عمارة الروضة", area:18, rent:12000, note:""},
+    {id:"u-5", name:"غرفة 201", type:"room", building:"عمارة الروضة", area:20, rent:13200, note:"شاغرة حالياً"}
+  ];
+  var t = [
+    {id:"t-1", name:"مؤسسة النخبة للتجارة", phone:"0555000111", idNo:"4030xxxxxx", note:"سجل تجاري"},
+    {id:"t-2", name:"صيدلية الوفاء", phone:"0555000222", idNo:"4030xxxxxx", note:""},
+    {id:"t-3", name:"عبدالله محمد", phone:"0555000333", idNo:"10xxxxxxxx", note:""},
+    {id:"t-4", name:"سالم أحمد", phone:"0555000444", idNo:"10xxxxxxxx", note:""}
+  ];
+  var y = new Date().getFullYear();
+  var c = [
+    {id:"c-1", unitId:"u-1", tenantId:"t-1", start:y+"-01-01", end:(y+1)+"-12-31", rent:60000, cycle:"quarterly", deposit:15000, note:""},
+    {id:"c-2", unitId:"u-2", tenantId:"t-2", start:y+"-03-01", end:(y+1)+"-02-28", rent:45000, cycle:"semi", deposit:10000, note:""},
+    {id:"c-3", unitId:"u-3", tenantId:"t-3", start:y+"-02-01", end:(y+1)+"-01-31", rent:12000, cycle:"monthly", deposit:1000, note:""},
+    {id:"c-4", unitId:"u-4", tenantId:"t-4", start:y+"-05-01", end:(y+1)+"-04-30", rent:12000, cycle:"monthly", deposit:1000, note:""}
+  ];
+  var p = [];
+  c.forEach(function(x){ p = p.concat(genSchedule(x)); });
+  var tdy = today();
+  p.forEach(function(x){ if(x.dueDate < tdy && Math.random() > .28){ x.paid = true; x.paidDate = x.dueDate; } });
+  var e = [
+    {id:"e-1", unitId:"u-1", date:addMonths(tdy,-1), cat:"صيانة", amount:2400, note:"إصلاح تكييف"},
+    {id:"e-2", unitId:"", date:addMonths(tdy,-1), cat:"رسوم بلدية", amount:1800, note:"رسوم لوحات"},
+    {id:"e-3", unitId:"u-3", date:addMonths(tdy,-2), cat:"كهرباء ومياه", amount:640, note:""}
+  ];
+  var k = [
+    {id:"k-1", date:addMonths(tdy,0), unitId:"u-3", tenantId:"t-3", body:"تسريب في سيفون دورة المياه", status:"open"},
+    {id:"k-2", date:addMonths(tdy,-1), unitId:"u-1", tenantId:"t-1", body:"عطل في مكيف الواجهة", status:"done"}
+  ];
+  [u,t,c,e].forEach(function(arr){ arr.forEach(function(o){ o.locked = true; o.unlockReq = false; }); });
+  S.units=u; S.tenants=t; S.contracts=c; S.payments=p; S.expenses=e; S.tickets=k;
+  seeded = true;
+  if(DB){ COLS.forEach(function(col){ S[col].forEach(function(o){ DB.collection(col).doc(o.id).set(o).catch(function(){}); }); }); }
+  else lsSet();
+}
+function clearAll(){
+  COLS.forEach(function(col){
+    if(col==="settings") return;
+    if(DB) S[col].forEach(function(o){ DB.collection(col).doc(o.id).delete().catch(function(){}); });
+    S[col]=[];
+  });
+  seeded=false; if(!DB) lsSet(); render();
+}
+
+/* ---------- التنقل ---------- */
+var MTABS = [
+  {k:"dash", t:"لوحة المعلومات", s:"اللوحة", ic:"◉"},
+  {k:"units", t:"الوحدات", s:"الوحدات", ic:"▦"},
+  {k:"contracts", t:"العقود", s:"العقود", ic:"❑"},
+  {k:"pay", t:"التحصيل", s:"التحصيل", ic:"₪"},
+  {k:"exp", t:"المصروفات", s:"المصروفات", ic:"↓"},
+  {k:"tickets", t:"البلاغات", s:"البلاغات", ic:"⚑"},
+  {k:"rep", t:"التقارير", s:"التقارير", ic:"◫"},
+  {k:"log", t:"سجل النشاط", s:"السجل", ic:"≡"},
+  {k:"set", t:"الإعدادات", s:"إعدادات", ic:"⚙"}
+];
+var TABS = MTABS;
+function drawNav(){
+  TABS = isOwner() ? MTABS : MTABS.filter(function(x){ return x.k!=="set" && x.k!=="log"; });
+  document.getElementById("tabbar").style.gridTemplateColumns = "repeat("+TABS.length+",1fr)";
+  var h = TABS.map(function(x){ return '<button data-tab="'+x.k+'" aria-current="'+(tab===x.k)+'"><span class="ic">'+x.ic+'</span>'+x.t+'</button>'; }).join("");
+  document.getElementById("nav").innerHTML = h;
+  document.getElementById("tabbar").innerHTML = TABS.map(function(x){ return '<button data-tab="'+x.k+'" aria-current="'+(tab===x.k)+'"><span class="ic">'+x.ic+'</span>'+x.s+'</button>'; }).join("");
+}
+document.addEventListener("click", function(ev){
+  var b = ev.target.closest("[data-tab]");
+  if(b){ tab = b.getAttribute("data-tab"); render(); window.scrollTo(0,0); }
+});
+
+/* ---------- إحصاءات ---------- */
+function stats(){
+  var t = today(), ym = t.slice(0,7);
+  var occupied = S.units.filter(function(u){ return activeContract(u.id); }).length;
+  var overdue = S.payments.filter(function(p){ return !p.paid && p.dueDate < t; });
+  var dueSoon = S.payments.filter(function(p){ return !p.paid && p.dueDate >= t && daysBetween(t,p.dueDate) <= 30; });
+  var collectedM = S.payments.filter(function(p){ return p.paid && (p.paidDate||"").slice(0,7)===ym; }).reduce(function(a,p){return a+p.amount;},0);
+  var expM = S.expenses.filter(function(e){ return (e.date||"").slice(0,7)===ym; }).reduce(function(a,e){return a+e.amount;},0);
+  var annual = S.contracts.filter(function(c){ return c.start<=t && c.end>=t; }).reduce(function(a,c){return a+c.rent;},0);
+  var expiring = S.contracts.filter(function(c){ var d=daysBetween(t,c.end); return d>=0 && d<=90; });
+  return {occupied:occupied, vacant:S.units.length-occupied, overdue:overdue, dueSoon:dueSoon,
+          overdueSum:overdue.reduce(function(a,p){return a+p.amount;},0),
+          collectedM:collectedM, expM:expM, annual:annual, expiring:expiring};
+}
+
+/* ---------- الشاشات ---------- */
+function render(){
+  var v = document.getElementById("view");
+  document.querySelector(".side").style.display = ROLE ? "" : "none";
+  document.getElementById("tabbar").style.display = ROLE ? "" : "none";
+  if(!ROLE){ v.innerHTML = vGate(); return; }
+  drawNav();
+  var map = {dash:vDash, units:vUnits, contracts:vContracts, pay:vPay, exp:vExp, tickets:vTickets, rep:vRep, log:vLog, set:vSettings};
+  if(!isOwner() && (tab==="set" || tab==="log")) tab = "dash";
+  v.innerHTML = (map[tab] || map.dash)();
+  var who = document.getElementById("whoTxt");
+  if(who) who.textContent = isOwner() ? "المالك / المدير" : "المتابع — إدخال ومتابعة";
+}
+
+/* شاشة الدخول */
+function vGate(){
+  return '<div style="min-height:82vh;display:flex;align-items:center;justify-content:center;padding:16px">'
+   + '<div style="width:min(460px,100%)">'
+   + '<div style="text-align:center;margin-bottom:22px"><h1 style="font-size:29px;letter-spacing:-.6px">دفتر الإيجارات</h1>'
+   + '<p style="color:var(--ink-3);margin:6px 0 0;font-size:14px">إدارة الغرف والمحلات — اختر طريقة الدخول</p></div>'
+   + '<div class="panel"><div style="padding:18px">'
+   + '<div class="f"><label for="pinIn">رمز الدخول</label><input id="pinIn" type="password" inputmode="numeric" placeholder="'+(getPin()?"أدخل رمزك":"أول تشغيل — عيّن رمز المدير")+'"></div>'
+   + '<button class="btn" style="margin-top:12px;width:100%" data-act="login">'+(getPin()?"دخول":"تعيين الرمز والدخول")+'</button>'
+   + '<div style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:var(--ink-2);line-height:1.85">'
+   + '<div><b>المالك / المدير</b> — كل شيء: الحذف، الموافقة على طلبات التعديل، سجل النشاط والإعدادات.</div>'
+   + '<div><b>المتابع</b> — يُدخل الوحدات والعقود والدفعات والمصروفات ويتابع الصيانة. بعد اعتماد السجل لا يعدّله إلا بموافقة المالك.</div>'
+   + '<div style="color:var(--ink-3);margin-top:6px">الرمز الذي تُدخله هو ما يحدد الدور.</div>'
+   + '</div></div></div>'
+   + '</div></div>';
+}
+function ticketTable(list, canEdit){
+  if(!list.length) return '<div class="empty">لا توجد بلاغات.</div>';
+  var ST = {open:{k:"bad",t:"مفتوح"}, doing:{k:"warn",t:"قيد المعالجة"}, done:{k:"ok",t:"مغلق"}};
+  return '<div class="scroll"><table><thead><tr><th>التاريخ</th><th>الوحدة</th><th>المستأجر</th><th>الوصف</th><th>الحالة</th>'+(canEdit?"<th></th>":"")+'</tr></thead><tbody>'
+    + list.slice().sort(function(a,b){return a.date<b.date?1:-1;}).map(function(t){
+      var u=byId("units",t.unitId), tn=byId("tenants",t.tenantId), s=ST[t.status]||ST.open;
+      return '<tr><td class="num">'+dstr(t.date)+'</td><td>'+esc(u?u.name:"—")+'</td>'
+        + '<td>'+esc(tn?tn.name:"—")+'</td>'
+        + '<td class="wide">'+esc(t.body)+'</td><td><span class="pill '+s.k+'">'+s.t+'</span></td>'
+        + (canEdit?'<td class="rowact"><button class="btn ghost sm" data-act="tkNext" data-id="'+t.id+'">تغيير الحالة</button>'
+            + (isOwner()?'<button class="linkbtn" data-act="delTicket" data-id="'+t.id+'">حذف</button>':'')+'</td>':"")
+        + '</tr>'; }).join("") + '</tbody></table></div>';
+}
+function vTickets(){
+  var open = S.tickets.filter(function(t){ return t.status!=="done"; }).length;
+  return head("البلاغات","طلبات الصيانة والمتابعة — "+open+" بلاغ مفتوح",
+      RO()?"":'<button class="btn" data-act="newTicket">بلاغ جديد</button>')
+    + '<div class="panel">' + ticketTable(S.tickets, !RO()) + '</div>';
+}
+function vLog(){
+  var h = head("سجل النشاط","كل إضافة أو تعديل أو اعتماد — ومن قام به");
+  var L = S.log.slice().sort(function(a,b){ return a.ts<b.ts?1:-1; }).slice(0,200);
+  if(!L.length) return h + '<div class="panel"><div class="empty">لا يوجد نشاط مسجّل بعد.</div></div>';
+  h += '<div class="panel"><div class="scroll"><table><thead><tr><th>الوقت</th><th>بواسطة</th><th>الإجراء</th></tr></thead><tbody>'
+    + L.map(function(g){
+        var d = new Date(g.ts);
+        return '<tr><td class="num">'+d.toLocaleString("ar-SA-u-ca-gregory-nu-latn",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})+'</td>'
+          + '<td><span class="pill '+(g.role==="manager"?"acc":"mute")+'">'+(ROLE_AR[g.role]||"—")+'</span></td>'
+          + '<td class="wide">'+esc(g.txt)+'</td></tr>';
+      }).join("") + '</tbody></table></div></div>';
+  return h;
+}
+function pendingPanel(){
+  var reqs = pendingReqs();
+  if(!reqs.length || !isOwner()) return "";
+  return '<div class="panel"><header><h2>طلبات فتح للتعديل ('+reqs.length+')</h2></header><div class="scroll"><table><thead><tr><th>النوع</th><th>السجل</th><th></th></tr></thead><tbody>'
+    + reqs.map(function(r){
+        return '<tr><td>'+COL_AR[r.col]+'</td><td class="wide">'+esc(labelOf(r.col, r.o))+'</td>'
+          + '<td><button class="btn sm" data-act="approve" data-col="'+r.col+'" data-id="'+r.o.id+'">موافقة وفتح</button></td></tr>';
+      }).join("") + '</tbody></table></div></div>';
+}
+function vSettings(){
+  var h = head("الإعدادات","رمزا الدخول وطريقة مشاركة الرابط");
+  h += '<div class="panel"><header><h2>رموز الدخول</h2></header><div style="padding:16px;display:grid;gap:14px;max-width:440px">'
+    + '<div class="f"><label for="newPin">رمز المالك / المدير</label><input id="newPin" type="text" inputmode="numeric" value="'+esc(getPin())+'"></div>'
+    + '<div class="f"><label for="newVPin">رمز المستخدم المتابع (اطّلاع فقط)</label><input id="newVPin" type="text" inputmode="numeric" value="'+esc(getVPin())+'" placeholder="اتركه فارغاً لتعطيل الدخول كمتابع"></div>'
+    + '<button class="btn" data-act="savePin" style="justify-self:start">حفظ الرموز</button></div>'
+    + '<div class="note">الرمزان يجب أن يختلفا. رمز المتابع هو ما تعطيه للمحاسب أو الشريك أو الموظف.</div></div>';
+  h += '<div class="panel"><header><h2>كيف أشارك الرابط؟</h2></header><div style="padding:16px;font-size:14px;line-height:1.9">'
+    + '<p style="margin:0 0 10px">الرابط واحد للجميع، والرمز هو ما يحدد الصلاحية:</p>'
+    + '<ul style="margin:0;padding-inline-start:20px;color:var(--ink-2)">'
+    + '<li><b>أنت:</b> رمز المدير — صلاحية كاملة، الحذف، الموافقة على طلبات التعديل، وسجل النشاط.</li>'
+    + '<li><b>المتابع:</b> رمز المتابع — يُدخل ويعدّل ما لم يُعتمد بعد، ويعتمد سجلاته، ويتابع الصيانة والتحصيل. لا يحذف، ولا يعدّل سجلاً معتمداً إلا بعد موافقتك.</li></ul>'
+    + '<p style="margin:12px 0 0;color:var(--ink-3);font-size:13px">لمشاركة الرابط استخدم زر المشاركة أعلى الصفحة. المشاركة متاحة لأعضاء مؤسستك في Claude فقط — لفتحه لأي شخص خارجي نحتاج استضافة مستقلة (Supabase + Vercel).</p>'
+    + '</div></div>';
+  h += '<div class="bar"><button class="btn ghost sm" data-act="switch">تسجيل الخروج وتغيير الدور</button>'
+    + (S.units.length?'<button class="btn ghost sm" data-act="clear">مسح كل البيانات</button>':'')+'</div>';
+  return h;
+}
+
+function head(title, sub, btn){
+  return '<div class="head"><div><h1>'+title+'</h1><p>'+sub+'</p></div>'+(btn||"")+'</div>';
+}
+function seedBanner(){
+  if(S.units.length || !isOwner()) return "";
+  return '<div class="banner"><span>لا توجد بيانات بعد. ابدأ بإضافة وحداتك، أو حمّل بيانات تجريبية لاستعراض التطبيق.</span><button class="btn sm" data-act="seed">بيانات تجريبية</button></div>';
+}
+
+function vDash(){
+  var s = stats();
+  var occPct = S.units.length ? Math.round(s.occupied/S.units.length*100) : 0;
+  var h = head("لوحة المعلومات","نظرة عامة على الإشغال والتحصيل لهذا الشهر");
+  h += seedBanner();
+  h += pendingPanel();
+  h += '<div class="tiles">'
+    + tile("نسبة الإشغال", occPct+"%", s.occupied+" مؤجّرة من "+S.units.length+" وحدة")
+    + tile("الدخل السنوي التعاقدي", money(s.annual), "من العقود السارية")
+    + tile("محصّل هذا الشهر", money(s.collectedM), "المصروفات: "+money(s.expM))
+    + tile("المتأخرات", money(s.overdueSum), s.overdue.length+" دفعة متأخرة", s.overdue.length>0)
+    + '</div>';
+
+  if(S.units.length){
+    var occW = S.units.length? s.occupied/S.units.length*100 : 0;
+    h += '<div class="panel"><header><h2>حالة الوحدات</h2></header><div style="padding:15px 16px">'
+      + '<div class="occ"><i style="width:'+occW+'%;background:var(--accent)"></i><i style="width:'+(100-occW)+'%;background:var(--surface-2)"></i></div>'
+      + '<div class="legend"><span><i style="background:var(--accent)"></i>مؤجّرة: '+s.occupied+'</span><span><i style="background:var(--surface-2)"></i>شاغرة: '+s.vacant+'</span></div>'
+      + '</div></div>';
+  }
+
+  var urgent = S.payments.filter(function(p){ return !p.paid && daysBetween(today(),p.dueDate) <= 30; })
+    .sort(function(a,b){ return a.dueDate < b.dueDate ? -1 : 1; }).slice(0,8);
+  h += '<div class="panel"><header><h2>دفعات تحتاج متابعة</h2><button class="btn ghost sm" data-tab="pay">كل الدفعات</button></header>'
+    + payTable(urgent, "لا توجد دفعات مستحقة خلال ٣٠ يوماً.") + '</div>';
+
+  if(s.expiring.length){
+    h += '<div class="panel"><header><h2>عقود تنتهي خلال ٩٠ يوماً</h2></header><div class="scroll"><table><thead><tr><th>الوحدة</th><th>المستأجر</th><th>ينتهي في</th><th>المتبقي</th></tr></thead><tbody>'
+      + s.expiring.map(function(c){
+          var u=byId("units",c.unitId), t=byId("tenants",c.tenantId);
+          return '<tr><td>'+esc(u?u.name:"—")+'</td><td>'+esc(t?t.name:"—")+'</td><td class="num">'+dstr(c.end)+'</td><td><span class="pill warn">'+daysBetween(today(),c.end)+' يوم</span></td></tr>';
+        }).join("")
+      + '</tbody></table></div></div>';
+  }
+  return h;
+}
+function tile(lbl,val,sub,alert){
+  return '<div class="tile'+(alert?" alert":"")+'"><div class="lbl">'+lbl+'</div><div class="val num">'+val+'</div><div class="sub">'+sub+'</div></div>';
+}
+
+function vUnits(){
+  var h = head("الوحدات","الغرف والمحلات وحالة كل وحدة",
+    RO()?"":'<div class="rowact"><button class="btn ghost" data-act="newTenant">مستأجر جديد</button><button class="btn" data-act="newUnit">وحدة جديدة</button></div>');
+  h += seedBanner();
+  if(!S.units.length) return h + '<div class="panel"><div class="empty">لم تُضف أي وحدة بعد.</div></div>';
+  h += '<div class="panel"><header><h2>قائمة الوحدات ('+S.units.length+')</h2></header><div class="scroll"><table><thead><tr>'
+    + '<th>الوحدة</th><th>النوع</th><th>المبنى</th><th>المساحة</th><th>الإيجار السنوي</th><th>الحالة</th><th>المستأجر الحالي</th><th>الاعتماد</th><th></th></tr></thead><tbody>';
+  h += S.units.map(function(u){
+    var c = activeContract(u.id), t = c ? byId("tenants", c.tenantId) : null;
+    return '<tr><td><b>'+esc(u.name)+'</b></td><td>'+(UTYPE[u.type]||u.type)+'</td><td>'+esc(u.building)+'</td>'
+      + '<td class="num">'+(u.area?u.area+" م²":"—")+'</td><td class="num">'+money(u.rent)+'</td>'
+      + '<td>'+(c?'<span class="pill ok">مؤجّرة</span>':'<span class="pill mute">شاغرة</span>')+'</td>'
+      + '<td class="wide">'+(t?esc(t.name):"—")+'</td>'
+      + '<td>'+lockPill(u)+'</td>'
+      + recActions("units", u, "editUnit", "delUnit") + '</tr>';
+  }).join("");
+  h += '</tbody></table></div></div>';
+
+  if(S.tenants.length){
+    h += '<div class="panel"><header><h2>المستأجرون ('+S.tenants.length+')</h2></header><div class="scroll"><table><thead><tr><th>الاسم</th><th>الجوال</th><th>الهوية / السجل</th><th>ملاحظات</th><th>الاعتماد</th><th></th></tr></thead><tbody>'
+      + S.tenants.map(function(t){
+        return '<tr><td><b>'+esc(t.name)+'</b></td><td class="num">'+esc(t.phone)+'</td><td class="num">'+esc(t.idNo)+'</td><td class="wide">'+esc(t.note)+'</td>'
+        + '<td>'+lockPill(t)+'</td>' + recActions("tenants", t, "editTenant", "delTenant") + '</tr>';
+      }).join("") + '</tbody></table></div></div>';
+  }
+  return h;
+}
+
+function vContracts(){
+  var h = head("العقود","كل عقد يولّد جدول دفعات تلقائياً حسب دورة السداد",
+    RO()?"":'<button class="btn" data-act="newContract">عقد جديد</button>');
+  h += seedBanner();
+  if(!S.contracts.length) return h + '<div class="panel"><div class="empty">لا توجد عقود. أضف وحدة ومستأجراً أولاً ثم أنشئ العقد.</div></div>';
+  var t = today();
+  h += '<div class="panel"><header><h2>العقود ('+S.contracts.length+')</h2></header><div class="scroll"><table><thead><tr>'
+    + '<th>الوحدة</th><th>المستأجر</th><th>من</th><th>إلى</th><th>الإيجار السنوي</th><th>الدورة</th><th>التأمين</th><th>الحالة</th><th>الاعتماد</th><th></th></tr></thead><tbody>';
+  h += S.contracts.slice().sort(function(a,b){return a.end<b.end?-1:1;}).map(function(c){
+    var u=byId("units",c.unitId), tn=byId("tenants",c.tenantId);
+    var st = c.end < t ? '<span class="pill mute">منتهٍ</span>'
+      : c.start > t ? '<span class="pill acc">قادم</span>'
+      : daysBetween(t,c.end) <= 90 ? '<span class="pill warn">ينتهي قريباً</span>' : '<span class="pill ok">ساري</span>';
+    return '<tr><td><b>'+esc(u?u.name:"—")+'</b></td><td class="wide">'+esc(tn?tn.name:"—")+'</td>'
+      + '<td class="num">'+dstr(c.start)+'</td><td class="num">'+dstr(c.end)+'</td>'
+      + '<td class="num">'+money(c.rent)+'</td><td>'+CYCLE[c.cycle].label+'</td><td class="num">'+money(c.deposit)+'</td><td>'+st+'</td>'
+      + '<td>'+lockPill(c)+'</td>' + recActions("contracts", c, "editContract", "delContract") + '</tr>';
+  }).join("");
+  h += '</tbody></table></div><div class="note">حذف العقد يحذف دفعاته غير المسدّدة. توثيق العقد نظامياً يتم عبر منصة «إيجار» — هذا السجل للإدارة الداخلية.</div></div>';
+  return h;
+}
+
+var payFilter = "all";
+function vPay(){
+  var h = head("التحصيل","جدول الدفعات المولّد من العقود");
+  h += seedBanner();
+  var t = today();
+  var list = S.payments.slice().sort(function(a,b){return a.dueDate<b.dueDate?-1:1;});
+  if(payFilter==="overdue") list = list.filter(function(p){ return !p.paid && p.dueDate<t; });
+  if(payFilter==="open") list = list.filter(function(p){ return !p.paid; });
+  if(payFilter==="paid") list = list.filter(function(p){ return p.paid; });
+  h += '<div class="bar"><select id="pf">'
+    + [["all","كل الدفعات"],["open","غير مسدّدة"],["overdue","المتأخرة فقط"],["paid","المسدّدة"]]
+      .map(function(o){return '<option value="'+o[0]+'"'+(payFilter===o[0]?" selected":"")+'>'+o[1]+'</option>';}).join("")
+    + '</select><span style="color:var(--ink-3);font-size:13px">'+list.length+' دفعة · إجمالي '+money(list.reduce(function(a,p){return a+p.amount;},0))+'</span></div>';
+  h += '<div class="panel">' + payTable(list, "لا توجد دفعات ضمن هذا التصنيف.") + '</div>';
+  return h;
+}
+function payTable(list, emptyMsg){
+  if(!list.length) return '<div class="empty">'+emptyMsg+'</div>';
+  return '<div class="scroll"><table><thead><tr><th>تاريخ الاستحقاق</th><th>الوحدة</th><th>المستأجر</th><th>المبلغ</th><th>الحالة</th>'+(RO()?"":"<th></th>")+'</tr></thead><tbody>'
+    + list.map(function(p){
+      var c = byId("contracts", p.contractId);
+      var u = c ? byId("units", c.unitId) : null, tn = c ? byId("tenants", c.tenantId) : null;
+      var st = payStatus(p);
+      return '<tr><td class="num">'+dstr(p.dueDate)+'</td><td>'+esc(u?u.name:"—")+'</td><td class="wide">'+esc(tn?tn.name:"—")+'</td>'
+        + '<td class="num">'+money(p.amount)+'</td><td><span class="pill '+st.k+'">'+st.t+'</span></td>'
+        + (RO()?"":'<td><button class="btn ghost sm" data-act="togglePay" data-id="'+p.id+'">'+(p.paid?"إلغاء السداد":"تسجيل سداد")+'</button></td>')+'</tr>';
+    }).join("") + '</tbody></table></div>';
+}
+
+function vExp(){
+  var h = head("المصروفات","صيانة ورسوم وخدمات — مربوطة بالوحدة لحساب صافي الدخل",
+    RO()?"":'<button class="btn" data-act="newExp">مصروف جديد</button>');
+  if(!S.expenses.length) return h + '<div class="panel"><div class="empty">لا توجد مصروفات مسجّلة.</div></div>';
+  var total = S.expenses.reduce(function(a,e){return a+e.amount;},0);
+  h += '<div class="panel"><header><h2>المصروفات ('+S.expenses.length+')</h2><span style="color:var(--ink-3);font-size:13px" class="num">الإجمالي '+money(total)+'</span></header><div class="scroll"><table><thead><tr><th>التاريخ</th><th>البند</th><th>الوحدة</th><th>المبلغ</th><th>ملاحظات</th><th>الاعتماد</th><th></th></tr></thead><tbody>'
+    + S.expenses.slice().sort(function(a,b){return a.date<b.date?1:-1;}).map(function(e){
+      var u = e.unitId ? byId("units", e.unitId) : null;
+      return '<tr><td class="num">'+dstr(e.date)+'</td><td>'+esc(e.cat)+'</td><td>'+(u?esc(u.name):'<span style="color:var(--ink-3)">عام</span>')+'</td>'
+        + '<td class="num">'+money(e.amount)+'</td><td class="wide">'+esc(e.note)+'</td>'
+        + '<td>'+lockPill(e)+'</td>' + recActions("expenses", e, "editExp", "delExp") + '</tr>';
+    }).join("") + '</tbody></table></div></div>';
+  return h;
+}
+
+function vRep(){
+  var h = head("التقارير","صافي الدخل لكل وحدة والتحصيل الشهري");
+  if(!S.units.length) return h + seedBanner() + '<div class="panel"><div class="empty">أضف وحدات لعرض التقارير.</div></div>';
+  var y = new Date().getFullYear();
+  var rows = S.units.map(function(u){
+    var cs = S.contracts.filter(function(c){return c.unitId===u.id;});
+    var collected = S.payments.filter(function(p){ var c=byId("contracts",p.contractId); return p.paid && c && c.unitId===u.id && (p.paidDate||"").slice(0,4)==String(y); }).reduce(function(a,p){return a+p.amount;},0);
+    var due = S.payments.filter(function(p){ var c=byId("contracts",p.contractId); return !p.paid && c && c.unitId===u.id && p.dueDate < today(); }).reduce(function(a,p){return a+p.amount;},0);
+    var exp = S.expenses.filter(function(e){ return e.unitId===u.id && (e.date||"").slice(0,4)==String(y); }).reduce(function(a,e){return a+e.amount;},0);
+    return {u:u, collected:collected, due:due, exp:exp, net:collected-exp, cs:cs.length};
+  });
+  var maxNet = Math.max.apply(null, rows.map(function(r){return Math.max(r.net,1);}));
+  h += '<div class="panel"><header><h2>صافي الدخل لكل وحدة — '+y+'</h2></header><div class="scroll"><table><thead><tr>'
+    + '<th>الوحدة</th><th>المحصّل</th><th>المتأخر</th><th>المصروفات</th><th>الصافي</th><th style="width:150px">مقارنة</th></tr></thead><tbody>'
+    + rows.map(function(r){
+      var w = Math.max(0, r.net/maxNet*100);
+      return '<tr><td><b>'+esc(r.u.name)+'</b></td><td class="num">'+money(r.collected)+'</td>'
+        + '<td class="num" style="color:'+(r.due?"var(--danger)":"inherit")+'">'+money(r.due)+'</td>'
+        + '<td class="num">'+money(r.exp)+'</td><td class="num"><b>'+money(r.net)+'</b></td>'
+        + '<td><div class="occ" style="margin:0"><i style="width:'+w+'%;background:var(--accent)"></i></div></td></tr>';
+    }).join("")
+    + '</tbody></table></div></div>';
+
+  var months = [];
+  for(var i=11;i>=0;i--){ months.push(addMonths(today(), -i).slice(0,7)); }
+  var mv = months.map(function(m){
+    return {m:m,
+      inc:S.payments.filter(function(p){return p.paid && (p.paidDate||"").slice(0,7)===m;}).reduce(function(a,p){return a+p.amount;},0),
+      exp:S.expenses.filter(function(e){return (e.date||"").slice(0,7)===m;}).reduce(function(a,e){return a+e.amount;},0)};
+  });
+  var mx = Math.max.apply(null, mv.map(function(x){return Math.max(x.inc,x.exp,1);}));
+  h += '<div class="panel"><header><h2>التحصيل والمصروفات — آخر ١٢ شهراً</h2></header><div class="scroll" style="padding:16px">'
+    + '<div style="display:flex;align-items:flex-end;gap:9px;height:170px;min-width:520px">'
+    + mv.map(function(x){
+        return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px">'
+          + '<div style="display:flex;align-items:flex-end;gap:3px;height:130px;width:100%;justify-content:center">'
+          + '<i title="محصّل" style="display:block;width:42%;background:var(--accent);border-radius:3px 3px 0 0;height:'+(x.inc/mx*100)+'%"></i>'
+          + '<i title="مصروف" style="display:block;width:42%;background:var(--warn);border-radius:3px 3px 0 0;height:'+(x.exp/mx*100)+'%"></i>'
+          + '</div><span class="num" style="font-size:10.5px;color:var(--ink-3)">'+x.m.slice(5)+'</span></div>';
+      }).join("")
+    + '</div><div class="legend"><span><i style="background:var(--accent)"></i>المحصّل</span><span><i style="background:var(--warn)"></i>المصروفات</span><span style="color:var(--ink-3)">أعلى قيمة: '+money(mx)+'</span></div>'
+    + '</div></div>';
+
+  h += '<div class="bar"><button class="btn ghost sm" data-act="csv">تصدير الدفعات (CSV)</button><button class="btn ghost sm" data-act="print">طباعة التقرير</button></div>';
+  return h;
+}
+
+/* ---------- النماذج ---------- */
+function fld(name,label,type,val,opts){
+  if(type==="select"){
+    return '<div class="f'+(opts&&opts.full?" full":"")+'"><label for="f_'+name+'">'+label+'</label><select id="f_'+name+'" name="'+name+'">'
+      + opts.items.map(function(o){return '<option value="'+esc(o[0])+'"'+(String(val)===String(o[0])?" selected":"")+'>'+esc(o[1])+'</option>';}).join("")
+      + '</select></div>';
+  }
+  if(type==="textarea"){
+    return '<div class="f full"><label for="f_'+name+'">'+label+'</label><textarea id="f_'+name+'" name="'+name+'">'+esc(val)+'</textarea></div>';
+  }
+  return '<div class="f'+(opts&&opts.full?" full":"")+'"><label for="f_'+name+'">'+label+'</label><input id="f_'+name+'" name="'+name+'" type="'+type+'" value="'+esc(val)+'"'+(opts&&opts.req?" required":"")+'></div>';
+}
+function openModal(title, bodyHtml, onSave){
+  var host = document.getElementById("modalHost");
+  host.innerHTML = '<div class="modal"><form class="box"><header><h2>'+title+'</h2><button type="button" class="x" data-close>&times;</button></header>'
+    + '<div class="body">'+bodyHtml+'</div>'
+    + '<footer><button type="submit" class="btn">حفظ</button><button type="button" class="btn ghost" data-close>إلغاء</button></footer></form></div>';
+  var form = host.querySelector("form");
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    var d = {}; new FormData(form).forEach(function(v,k){ d[k]=v; });
+    onSave(d); closeModal();
+  });
+  host.querySelectorAll("[data-close]").forEach(function(b){ b.addEventListener("click", closeModal); });
+  host.querySelector(".modal").addEventListener("mousedown", function(e){ if(e.target===this) closeModal(); });
+  var first = form.querySelector("input,select"); if(first) first.focus();
+}
+function closeModal(){ document.getElementById("modalHost").innerHTML=""; }
+document.addEventListener("keydown", function(e){ if(e.key==="Escape") closeModal(); });
+
+function unitForm(u){
+  u = u || {id:"",name:"",type:"room",building:"",area:"",rent:"",note:""};
+  openModal(u.id?"تعديل وحدة":"وحدة جديدة",
+    fld("name","اسم/رقم الوحدة","text",u.name,{req:1})
+    + fld("type","النوع","select",u.type,{items:Object.keys(UTYPE).map(function(k){return [k,UTYPE[k]];})})
+    + fld("building","المبنى / الموقع","text",u.building)
+    + fld("area","المساحة (م²)","number",u.area)
+    + fld("rent","الإيجار السنوي (ر.س)","number",u.rent,{req:1})
+    + fld("note","ملاحظات","textarea",u.note),
+    function(d){ save("units", {id:u.id||uid("u"), name:d.name, type:d.type, building:d.building, area:+d.area||0, rent:+d.rent||0, note:d.note,
+      locked:!!u.locked, unlockReq:!!u.unlockReq}); });
+}
+function tenantForm(t){
+  t = t || {id:"",name:"",phone:"",idNo:"",note:""};
+  openModal(t.id?"تعديل مستأجر":"مستأجر جديد",
+    fld("name","الاسم / اسم المنشأة","text",t.name,{req:1,full:1})
+    + fld("phone","الجوال","tel",t.phone)
+    + fld("idNo","رقم الهوية / السجل","text",t.idNo)
+    + fld("note","ملاحظات","textarea",t.note),
+    function(d){ save("tenants", {id:t.id||uid("t"), name:d.name, phone:d.phone, idNo:d.idNo, note:d.note,
+      locked:!!t.locked, unlockReq:!!t.unlockReq}); });
+}
+function contractForm(old){
+  if(!S.units.length || !S.tenants.length){ toast("أضف وحدة ومستأجراً قبل إنشاء العقد."); return; }
+  var c0 = old || {id:"", unitId:"", tenantId:"", start:today(), end:addMonths(today(),12), rent:"", cycle:"monthly", deposit:"0", note:""};
+  openModal(old?"تعديل عقد":"عقد جديد",
+    fld("unitId","الوحدة","select",c0.unitId,{items:S.units.map(function(u){return [u.id, u.name+" — "+(UTYPE[u.type]||"")];})})
+    + fld("tenantId","المستأجر","select",c0.tenantId,{items:S.tenants.map(function(t){return [t.id,t.name];})})
+    + fld("start","بداية العقد","date",c0.start,{req:1})
+    + fld("end","نهاية العقد","date",c0.end,{req:1})
+    + fld("rent","الإيجار السنوي (ر.س)","number",c0.rent,{req:1})
+    + fld("cycle","دورة السداد","select",c0.cycle,{items:Object.keys(CYCLE).map(function(k){return [k,CYCLE[k].label];})})
+    + fld("deposit","مبلغ التأمين","number",c0.deposit)
+    + fld("note","ملاحظات","textarea",c0.note),
+    function(d){
+      var c = {id:c0.id||uid("c"), unitId:d.unitId, tenantId:d.tenantId, start:d.start, end:d.end,
+               rent:+d.rent||0, cycle:d.cycle, deposit:+d.deposit||0, note:d.note,
+               locked:!!c0.locked, unlockReq:!!c0.unlockReq};
+      if(c.end <= c.start){ toast("تاريخ النهاية يجب أن يكون بعد البداية."); return; }
+      save("contracts", c);
+      // إعادة توليد الدفعات غير المسدّدة فقط
+      var paid = S.payments.filter(function(p){ return p.contractId===c.id && p.paid; });
+      S.payments.filter(function(p){ return p.contractId===c.id && !p.paid; }).forEach(function(p){ remove("payments", p.id); });
+      var fresh = genSchedule(c).filter(function(p){ return !paid.some(function(q){ return q.dueDate===p.dueDate; }); });
+      saveMany("payments", fresh);
+      toast(old?"تم تحديث العقد وإعادة توليد الدفعات غير المسدّدة.":"تم إنشاء العقد وتوليد جدول الدفعات.");
+    });
+}
+function ticketForm(){
+  var units = S.units.map(function(u){ return [u.id,u.name]; });
+  if(!units.length){ toast("أضف وحدة أولاً."); return; }
+  openModal("بلاغ صيانة",
+    fld("unitId","الوحدة","select","",{items:units,full:1})
+    + fld("body","وصف المشكلة","textarea",""),
+    function(d){
+      if(!d.body.trim()){ toast("اكتب وصف المشكلة."); return; }
+      save("tickets", {id:uid("k"), date:today(), unitId:d.unitId,
+        tenantId: (activeContract(d.unitId)||{}).tenantId || "",
+        body:d.body, status:"open"});
+      toast("تم إرسال البلاغ.");
+    });
+}
+function expForm(old){
+  var e0 = old || {id:"", date:today(), cat:"صيانة", unitId:"", amount:"", note:""};
+  openModal(old?"تعديل مصروف":"مصروف جديد",
+    fld("date","التاريخ","date",e0.date,{req:1})
+    + fld("cat","البند","select",e0.cat,{items:EXPCAT.map(function(c){return [c,c];})})
+    + fld("unitId","الوحدة","select",e0.unitId,{items:[["","مصروف عام"]].concat(S.units.map(function(u){return [u.id,u.name];}))})
+    + fld("amount","المبلغ (ر.س)","number",e0.amount,{req:1})
+    + fld("note","ملاحظات","textarea",e0.note),
+    function(d){ save("expenses", {id:e0.id||uid("e"), date:d.date, cat:d.cat, unitId:d.unitId, amount:+d.amount||0, note:d.note,
+      locked:!!e0.locked, unlockReq:!!e0.unlockReq}); });
+}
+
+/* ---------- الأحداث ---------- */
+document.addEventListener("click", function(ev){
+  var b = ev.target.closest("[data-act]"); if(!b) return;
+  var a = b.getAttribute("data-act"), id = b.getAttribute("data-id");
+  var OWNER_ONLY = ["seed","delUnit","delTenant","delContract","delExp","delTicket","clear","savePin","approve"];
+  if(!isOwner() && OWNER_ONLY.indexOf(a) >= 0){ toast("هذا الإجراء للمالك فقط."); return; }
+  var col = b.getAttribute("data-col");
+  if(a==="lock" || a==="req" || a==="approve"){
+    var rec = byId(col, id); if(!rec) return;
+    if(a==="lock"){
+      if(!confirm("اعتماد هذا السجل؟ بعد الاعتماد لن تتمكن من تعديله إلا بموافقة المالك.")) return;
+      rec.locked = true; rec.unlockReq = false; logAct("اعتمد "+COL_AR[col]+": "+labelOf(col,rec));
+    } else if(a==="req"){
+      rec.unlockReq = true; logAct("طلب فتح "+COL_AR[col]+" للتعديل: "+labelOf(col,rec)); toast("أُرسل الطلب للمالك.");
+    } else {
+      rec.locked = false; rec.unlockReq = false; logAct("وافق على فتح "+COL_AR[col]+": "+labelOf(col,rec));
+    }
+    SKIP_LOG = true; save(col, rec); SKIP_LOG = false; return;
+  }
+  if(a==="editContract"){ var c = byId("contracts", id);
+    if(c && !canEditRec(c)){ toast("العقد معتمد — اطلب فتحه للتعديل."); return; } contractForm(c); return; }
+  if(a==="editExp"){ var x = byId("expenses", id);
+    if(x && !canEditRec(x)){ toast("المصروف معتمد — اطلب فتحه للتعديل."); return; } expForm(x); return; }
+  if(a==="login"){
+    var val = (document.getElementById("pinIn").value||"").trim();
+    if(!getPin()){
+      if(val.length < 4){ toast("اختر رمزاً من ٤ خانات على الأقل."); return; }
+      setPins(val, ""); setRole("manager"); toast("تم تعيين رمز المدير. أضف رمز المتابع من الإعدادات.");
+    } else if(val === getPin()){ setRole("manager"); }
+    else if(getVPin() && val === getVPin()){ setRole("viewer"); }
+    else { toast("رمز غير صحيح."); }
+    return;
+  }
+  if(a==="switch"){ setRole(null); return; }
+  if(a==="savePin"){
+    var np = (document.getElementById("newPin").value||"").trim();
+    var nv = (document.getElementById("newVPin").value||"").trim();
+    if(np.length < 4){ toast("رمز المدير يجب أن يكون ٤ خانات على الأقل."); return; }
+    if(nv && nv.length < 4){ toast("رمز المتابع يجب أن يكون ٤ خانات على الأقل."); return; }
+    if(nv && nv === np){ toast("الرمزان يجب أن يختلفا."); return; }
+    setPins(np, nv); toast("تم حفظ الرموز."); return;
+  }
+  if(a==="newTicket"){ ticketForm(); return; }
+  if(a==="tkNext"){
+    var tk = byId("tickets", id); if(!tk) return;
+    tk.status = tk.status==="open" ? "doing" : tk.status==="doing" ? "done" : "open";
+    save("tickets", tk); return;
+  }
+  if(a==="delTicket"){ if(confirm("حذف هذا البلاغ؟")) remove("tickets", id); return; }
+  if(a==="seed"){ seed(); render(); }
+  else if(a==="newUnit") unitForm();
+  else if(a==="editUnit"){ var uu = byId("units",id);
+    if(uu && !canEditRec(uu)){ toast("الوحدة معتمدة — اطلب فتحها للتعديل."); return; } unitForm(uu); }
+  else if(a==="delUnit"){ if(confirm("حذف هذه الوحدة؟")) remove("units",id); }
+  else if(a==="newTenant") tenantForm();
+  else if(a==="editTenant"){ var tt = byId("tenants",id);
+    if(tt && !canEditRec(tt)){ toast("السجل معتمد — اطلب فتحه للتعديل."); return; } tenantForm(tt); }
+  else if(a==="delTenant"){ if(confirm("حذف هذا المستأجر؟")) remove("tenants",id); }
+  else if(a==="newContract") contractForm();
+  else if(a==="delContract"){
+    if(!confirm("حذف العقد ودفعاته غير المسدّدة؟")) return;
+    S.payments.filter(function(p){return p.contractId===id && !p.paid;}).forEach(function(p){ remove("payments",p.id); });
+    remove("contracts", id);
+  }
+  else if(a==="togglePay"){
+    var p = byId("payments", id); if(!p) return;
+    if(p.paid && !isOwner()){ toast("إلغاء سداد مسجّل يحتاج موافقة المالك."); return; }
+    p.paid = !p.paid; p.paidDate = p.paid ? today() : "";
+    save("payments", p);
+  }
+  else if(a==="newExp") expForm();
+  else if(a==="delExp"){ if(confirm("حذف هذا المصروف؟")) remove("expenses",id); }
+  else if(a==="print") window.print();
+  else if(a==="clear"){ if(confirm("سيتم مسح كل البيانات نهائياً. متابعة؟")) clearAll(); }
+  else if(a==="csv") exportCsv();
+});
+document.addEventListener("change", function(ev){
+  if(ev.target.id==="pf"){ payFilter = ev.target.value; render(); }
+});
+document.getElementById("themeBtn").addEventListener("click", function(){
+  var cur = document.documentElement.getAttribute("data-theme");
+  var next = cur==="dark" ? "light" : cur==="light" ? "dark"
+    : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "dark");
+  document.documentElement.setAttribute("data-theme", next);
+});
+
+function exportCsv(){
+  var rows = [["تاريخ الاستحقاق","الوحدة","المستأجر","المبلغ","الحالة","تاريخ السداد"]];
+  S.payments.slice().sort(function(a,b){return a.dueDate<b.dueDate?-1:1;}).forEach(function(p){
+    var c=byId("contracts",p.contractId), u=c?byId("units",c.unitId):null, t=c?byId("tenants",c.tenantId):null;
+    rows.push([p.dueDate, u?u.name:"", t?t.name:"", p.amount, p.paid?"مسدّدة":"غير مسدّدة", p.paidDate||""]);
+  });
+  var csv = "﻿" + rows.map(function(r){ return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(","); }).join("\n");
+  navigator.clipboard && navigator.clipboard.writeText(csv).then(function(){ toast("تم نسخ بيانات CSV إلى الحافظة."); },
+    function(){ toast("تعذّر النسخ — استخدم الطباعة بدلاً منه."); });
+}
+
+var toastT;
+function toast(msg){
+  var el = document.getElementById("toast");
+  if(!el){ el = document.createElement("div"); el.id="toast";
+    el.style.cssText="position:fixed;bottom:20px;inset-inline-start:20px;background:var(--surface);color:var(--ink);border:1px solid var(--line);box-shadow:var(--shadow);padding:11px 16px;border-radius:10px;font-size:13.5px;z-index:80;max-width:320px";
+    document.body.appendChild(el); }
+  el.textContent = msg; el.style.display="block";
+  clearTimeout(toastT); toastT = setTimeout(function(){ el.style.display="none"; }, 3200);
+}
+
+/* ---------- الإقلاع ---------- */
+lsGet();
+render();
+
+/* --- الطبقة السحابية: Supabase --- */
+var TABLE = "ijar_records", SB = null, pulling = false;
+function shimDB(sb){
+  return { collection: function(col){ return {
+    doc: function(id){ return {
+      set: function(o){ return Promise.resolve(sb.from(TABLE).upsert({id:id, col:col, data:o})); },
+      delete: function(){ return Promise.resolve(sb.from(TABLE).delete().eq("id", id)); }
+    };}
+  };};};
+}
+function pull(){
+  if(!SB || pulling) return Promise.resolve();
+  pulling = true;
+  return Promise.resolve(SB.from(TABLE).select("id,col,data")).then(function(res){
+    pulling = false;
+    if(res.error){ setSync(false, "تعذّر الاتصال بالسحابة"); return; }
+    COLS.forEach(function(c){ S[c] = []; });
+    (res.data||[]).forEach(function(r){
+      if(!S[r.col]) return;
+      var o = Object.assign({}, r.data); o.id = r.id; S[r.col].push(o);
+    });
+    setSync(true, "متزامن مع السحابة");
+    render();
+  }).catch(function(){ pulling = false; setSync(false, "تعذّر الاتصال بالسحابة"); });
+}
+(function boot(){
+  var CFG = window.IJAR_CONFIG || {};
+  if(!window.supabase || !CFG.url || !CFG.key){ setSync(false,"محلي على هذا الجهاز — لم تُضبط إعدادات السحابة"); return; }
+  try{
+    SB = window.supabase.createClient(CFG.url, CFG.key);
+    DB = shimDB(SB);
+    setSync(false, "جارٍ التحميل…");
+    pull().then(function(){
+      SB.channel("ijar").on("postgres_changes", {event:"*", schema:"public", table:TABLE}, function(){ pull(); }).subscribe();
+    });
+  }catch(e){ setSync(false,"محلي على هذا الجهاز"); }
+})();
+
+function setSync(on, txt){
+  var d = document.getElementById("dot"), s = document.getElementById("syncTxt");
+  if(d) d.className = "dot" + (on?" on":"");
+  if(s) s.textContent = txt;
+}
+})();
+</script>
+
+</body>
+</html>
