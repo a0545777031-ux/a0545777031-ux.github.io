@@ -926,7 +926,7 @@ function shimDB(sb){
       set: function(o){ return Promise.resolve(sb.from(TABLE).upsert({id:id, col:col, data:o})); },
       delete: function(){ return Promise.resolve(sb.from(TABLE).delete().eq("id", id)); }
     };}
-  };};};
+  };}};
 }
 function pull(){
   if(!SB || pulling) return Promise.resolve();
