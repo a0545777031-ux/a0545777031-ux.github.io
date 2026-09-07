@@ -203,18 +203,18 @@ td.wide{white-space:normal;min-width:160px}
 "use strict";
 
 /* ---------- الحالة والتخزين ---------- */
-var COLS = ["units","tenants","contracts","payments","expenses","tickets","settings","log"];
-var S = {units:[],tenants:[],contracts:[],payments:[],expenses:[],tickets:[],settings:[],log:[]};
+var COLS = ["units","tenants","contracts","payments","expenses","tickets","settings","log","users"];
+var S = {units:[],tenants:[],contracts:[],payments:[],expenses:[],tickets:[],settings:[],log:[],users:[]};
 var DB = null, tab = "dash", seeded = false;
-var ROLE = null;   // "manager" = المالك/المدير ، "viewer" = المستخدم المتابع
-try{ ROLE = localStorage.getItem("ijar-role") || null; }catch(e){}
+var ROLE = null, ME = null;   // "manager" = المالك/المدير ، "viewer" = متابع (ME = معرّف حسابه)
+try{ ROLE = localStorage.getItem("ijar-role") || null; ME = localStorage.getItem("ijar-me") || null; }catch(e){}
 function isOwner(){ return ROLE === "manager"; }   // المالك: كل شيء + الحذف والإعدادات
 function RO(){ return false; }                     // المتابع يدخل ويعدّل — القيود على الحذف فقط
 var ROLE_AR = {manager:"المالك", viewer:"المتابع"};
 var COL_AR = {units:"وحدة", tenants:"مستأجر", contracts:"عقد", payments:"دفعة", expenses:"مصروف", tickets:"بلاغ"};
 function logAct(txt){
   if(!txt) return;
-  var e = {id:uid("g"), ts:new Date().toISOString(), role:ROLE||"", txt:txt};
+  var e = {id:uid("g"), ts:new Date().toISOString(), role:ROLE||"", who:actorName(), txt:txt};
   S.log.push(e);
   if(DB) DB.collection("log").doc(e.id).set(e).catch(function(){});
   if(S.log.length > 400){
@@ -255,18 +255,23 @@ function labelOf(col, obj){
   if(col==="payments"){ var c=byId("contracts",obj.contractId), u=c?byId("units",c.unitId):null; return (u?u.name+" — ":"")+dstr(obj.dueDate); }
   return obj.name || obj.body || obj.cat || obj.id;
 }
-function setRole(r){
-  ROLE = r;
-  try{ r ? localStorage.setItem("ijar-role", r) : localStorage.removeItem("ijar-role"); }catch(e){}
+function setRole(r, meId){
+  ROLE = r; ME = meId || null;
+  try{
+    r ? localStorage.setItem("ijar-role", r) : localStorage.removeItem("ijar-role");
+    ME ? localStorage.setItem("ijar-me", ME) : localStorage.removeItem("ijar-me");
+  }catch(e){}
   tab = "dash";
   render();
 }
 function cfg(){ return S.settings.find(function(x){return x.id==="app";}) || {}; }
-function getPin(){ var p = cfg().pin; return p ? String(p) : ""; }
-function getVPin(){ var p = cfg().vpin; return p ? String(p) : ""; }
-function setPins(pin, vpin){
-  var c = cfg();
-  save("settings", {id:"app", pin:String(pin!=null?pin:(c.pin||"")), vpin:String(vpin!=null?vpin:(c.vpin||""))});
+function adminUser(){ return cfg().au ? String(cfg().au) : ""; }
+function adminPass(){ return cfg().ap ? String(cfg().ap) : ""; }
+function setAdmin(u, p){ save("settings", {id:"app", au:String(u), ap:String(p)}); }
+function meUser(){ return ME ? byId("users", ME) : null; }
+function actorName(){
+  if(isOwner()) return adminUser() || "المالك";
+  var u = meUser(); return u ? (u.name || u.user) : "متابع";
 }
 
 function uid(p){ return p + "-" + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
@@ -436,7 +441,7 @@ function render(){
   if(!isOwner() && (tab==="set" || tab==="log")) tab = "dash";
   v.innerHTML = (map[tab] || map.dash)();
   var who = document.getElementById("whoTxt");
-  if(who) who.textContent = isOwner() ? "المالك / المدير" : "المتابع — إدخال ومتابعة";
+  if(who) who.textContent = (isOwner() ? "المالك: " : "متابع: ") + actorName();
 }
 
 /* شاشة الدخول */
@@ -446,12 +451,17 @@ function vGate(){
    + '<div style="text-align:center;margin-bottom:22px"><h1 style="font-size:29px;letter-spacing:-.6px">دفتر الإيجارات</h1>'
    + '<p style="color:var(--ink-3);margin:6px 0 0;font-size:14px">إدارة الغرف والمحلات — اختر طريقة الدخول</p></div>'
    + '<div class="panel"><div style="padding:18px">'
-   + '<div class="f"><label for="pinIn">رمز الدخول</label><input id="pinIn" type="password" inputmode="numeric" placeholder="'+(getPin()?"أدخل رمزك":"أول تشغيل — عيّن رمز المدير")+'"></div>'
-   + '<button class="btn" style="margin-top:12px;width:100%" data-act="login">'+(getPin()?"دخول":"تعيين الرمز والدخول")+'</button>'
+   + (adminUser()
+      ? '<div class="f"><label for="uIn">اسم المستخدم</label><input id="uIn" type="text" autocomplete="username"></div>'
+        + '<div class="f" style="margin-top:11px"><label for="pIn">كلمة المرور</label><input id="pIn" type="password" autocomplete="current-password"></div>'
+        + '<button class="btn" style="margin-top:14px;width:100%" data-act="login">دخول</button>'
+      : '<div style="font-size:13px;color:var(--ink-2);margin-bottom:12px">أول تشغيل — أنشئ حساب المالك. ستنشئ حسابات المتابعين بعدها من الإعدادات.</div>'
+        + '<div class="f"><label for="uIn">اسم مستخدم المالك</label><input id="uIn" type="text" autocomplete="username"></div>'
+        + '<div class="f" style="margin-top:11px"><label for="pIn">كلمة المرور</label><input id="pIn" type="password" autocomplete="new-password"></div>'
+        + '<button class="btn" style="margin-top:14px;width:100%" data-act="login">إنشاء الحساب والدخول</button>')
    + '<div style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:var(--ink-2);line-height:1.85">'
-   + '<div><b>المالك / المدير</b> — كل شيء: الحذف، الموافقة على طلبات التعديل، سجل النشاط والإعدادات.</div>'
-   + '<div><b>المتابع</b> — يُدخل الوحدات والعقود والدفعات والمصروفات ويتابع الصيانة. بعد اعتماد السجل لا يعدّله إلا بموافقة المالك.</div>'
-   + '<div style="color:var(--ink-3);margin-top:6px">الرمز الذي تُدخله هو ما يحدد الدور.</div>'
+   + '<div><b>المالك / المدير</b> — كل شيء: إنشاء حسابات المتابعين، الحذف، الموافقة على طلبات التعديل، وسجل النشاط.</div>'
+   + '<div><b>المتابع</b> — يدخل بحساب يُنشئه له المالك: يُدخل الوحدات والعقود والدفعات والمصروفات ويتابع الصيانة. بعد اعتماد السجل لا يعدّله إلا بموافقة المالك.</div>'
    + '</div></div></div>'
    + '</div></div>';
 }
@@ -482,7 +492,7 @@ function vLog(){
     + L.map(function(g){
         var d = new Date(g.ts);
         return '<tr><td class="num">'+d.toLocaleString("ar-SA-u-ca-gregory-nu-latn",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})+'</td>'
-          + '<td><span class="pill '+(g.role==="manager"?"acc":"mute")+'">'+(ROLE_AR[g.role]||"—")+'</span></td>'
+          + '<td><span class="pill '+(g.role==="manager"?"acc":"mute")+'">'+esc(g.who || ROLE_AR[g.role] || "—")+'</span></td>'
           + '<td class="wide">'+esc(g.txt)+'</td></tr>';
       }).join("") + '</tbody></table></div></div>';
   return h;
@@ -497,18 +507,37 @@ function pendingPanel(){
       }).join("") + '</tbody></table></div></div>';
 }
 function vSettings(){
-  var h = head("الإعدادات","رمزا الدخول وطريقة مشاركة الرابط");
-  h += '<div class="panel"><header><h2>رموز الدخول</h2></header><div style="padding:16px;display:grid;gap:14px;max-width:440px">'
-    + '<div class="f"><label for="newPin">رمز المالك / المدير</label><input id="newPin" type="text" inputmode="numeric" value="'+esc(getPin())+'"></div>'
-    + '<div class="f"><label for="newVPin">رمز المستخدم المتابع (اطّلاع فقط)</label><input id="newVPin" type="text" inputmode="numeric" value="'+esc(getVPin())+'" placeholder="اتركه فارغاً لتعطيل الدخول كمتابع"></div>'
-    + '<button class="btn" data-act="savePin" style="justify-self:start">حفظ الرموز</button></div>'
-    + '<div class="note">الرمزان يجب أن يختلفا. رمز المتابع هو ما تعطيه للمحاسب أو الشريك أو الموظف.</div></div>';
-  h += '<div class="panel"><header><h2>كيف أشارك الرابط؟</h2></header><div style="padding:16px;font-size:14px;line-height:1.9">'
-    + '<p style="margin:0 0 10px">الرابط واحد للجميع، والرمز هو ما يحدد الصلاحية:</p>'
+  var h = head("الإعدادات","حسابات الدخول وصلاحياتها",
+    '<button class="btn" data-act="newUser">حساب متابع جديد</button>');
+
+  h += '<div class="panel"><header><h2>حسابات المتابعين ('+S.users.length+')</h2></header>';
+  if(!S.users.length){
+    h += '<div class="empty">لم تُنشئ أي حساب متابع بعد. اضغط «حساب متابع جديد» وحدّد له اسم مستخدم وكلمة مرور.</div>';
+  } else {
+    h += '<div class="scroll"><table><thead><tr><th>الاسم</th><th>اسم المستخدم</th><th>كلمة المرور</th><th>الحالة</th><th></th></tr></thead><tbody>'
+      + S.users.map(function(u){
+          return '<tr><td><b>'+esc(u.name||"—")+'</b></td><td class="num">'+esc(u.user)+'</td>'
+            + '<td class="num"><span id="pw-'+u.id+'" data-v="'+esc(u.pass)+'">••••••</span> '
+            + '<button class="linkbtn" data-act="showPass" data-id="'+u.id+'">إظهار</button></td>'
+            + '<td>'+(u.active===false?'<span class="pill mute">موقوف</span>':'<span class="pill ok">نشط</span>')+'</td>'
+            + '<td class="rowact"><button class="linkbtn" data-act="editUser" data-id="'+u.id+'">تعديل</button>'
+            + '<button class="btn ghost sm" data-act="toggleUser" data-id="'+u.id+'">'+(u.active===false?"تفعيل":"إيقاف")+'</button>'
+            + '<button class="linkbtn" data-act="delUser" data-id="'+u.id+'">حذف</button></td></tr>';
+        }).join("") + '</tbody></table></div>';
+  }
+  h += '<div class="note">الحساب الموقوف يبقى في السجل لكنه لا يستطيع الدخول. أعطِ كل متابع اسم مستخدمه وكلمة مروره والرابط نفسه.</div></div>';
+
+  h += '<div class="panel"><header><h2>حساب المالك</h2></header><div style="padding:16px;display:grid;gap:13px;max-width:420px">'
+    + '<div class="f"><label for="adUser">اسم المستخدم</label><input id="adUser" type="text" value="'+esc(adminUser())+'"></div>'
+    + '<div class="f"><label for="adPass">كلمة المرور</label><input id="adPass" type="text" value="'+esc(adminPass())+'"></div>'
+    + '<button class="btn" data-act="saveAdmin" style="justify-self:start">حفظ</button></div>'
+    + '<div class="note">هذا الحساب يملك كل الصلاحيات — لا تشاركه.</div></div>';
+
+  h += '<div class="panel"><header><h2>صلاحيات المتابع</h2></header><div style="padding:16px;font-size:14px;line-height:1.9">'
     + '<ul style="margin:0;padding-inline-start:20px;color:var(--ink-2)">'
-    + '<li><b>أنت:</b> رمز المدير — صلاحية كاملة، الحذف، الموافقة على طلبات التعديل، وسجل النشاط.</li>'
-    + '<li><b>المتابع:</b> رمز المتابع — يُدخل ويعدّل ما لم يُعتمد بعد، ويعتمد سجلاته، ويتابع الصيانة والتحصيل. لا يحذف، ولا يعدّل سجلاً معتمداً إلا بعد موافقتك.</li></ul>'
-    + '<p style="margin:12px 0 0;color:var(--ink-3);font-size:13px">لمشاركة الرابط استخدم زر المشاركة أعلى الصفحة. المشاركة متاحة لأعضاء مؤسستك في Claude فقط — لفتحه لأي شخص خارجي نحتاج استضافة مستقلة (Supabase + Vercel).</p>'
+    + '<li><b>يستطيع:</b> إدخال الوحدات والمستأجرين والعقود والمصروفات، تسجيل السداد، متابعة الصيانة، واعتماد سجلاته.</li>'
+    + '<li><b>لا يستطيع:</b> الحذف، تعديل سجل معتمد إلا بموافقتك، الدخول للإعدادات أو سجل النشاط، إلغاء سداد مسجّل.</li></ul>'
+    + '<p style="margin:12px 0 0;color:var(--ink-3);font-size:13px">كل ما يفعله يظهر لك مباشرة في الشاشات، ويُسجَّل باسمه في سجل النشاط.</p>'
     + '</div></div>';
   h += '<div class="bar"><button class="btn ghost sm" data-act="switch">تسجيل الخروج وتغيير الدور</button>'
     + (S.units.length?'<button class="btn ghost sm" data-act="clear">مسح كل البيانات</button>':'')+'</div>';
@@ -782,6 +811,22 @@ function contractForm(old){
       toast(old?"تم تحديث العقد وإعادة توليد الدفعات غير المسدّدة.":"تم إنشاء العقد وتوليد جدول الدفعات.");
     });
 }
+function userForm(u){
+  u = u || {id:"", name:"", user:"", pass:"", active:true};
+  openModal(u.id?"تعديل حساب متابع":"حساب متابع جديد",
+    fld("name","الاسم","text",u.name,{req:1,full:1})
+    + fld("user","اسم المستخدم","text",u.user,{req:1})
+    + fld("pass","كلمة المرور","text",u.pass,{req:1}),
+    function(d){
+      var un = d.user.trim(), pw = d.pass.trim();
+      if(un.length < 3 || pw.length < 4){ toast("اسم المستخدم ٣ أحرف وكلمة المرور ٤ خانات على الأقل."); return; }
+      if(un === adminUser()){ toast("هذا الاسم مستخدم لحساب المالك."); return; }
+      if(S.users.some(function(x){ return x.user===un && x.id!==u.id; })){ toast("اسم المستخدم مستخدم بالفعل."); return; }
+      var rec = {id:u.id||uid("us"), name:d.name.trim(), user:un, pass:pw, active:u.active!==false};
+      save("users", rec);
+      logAct((u.id?"عدّل":"أنشأ")+" حساب متابع: "+un);
+    });
+}
 function ticketForm(){
   var units = S.units.map(function(u){ return [u.id,u.name]; });
   if(!units.length){ toast("أضف وحدة أولاً."); return; }
@@ -812,7 +857,8 @@ function expForm(old){
 document.addEventListener("click", function(ev){
   var b = ev.target.closest("[data-act]"); if(!b) return;
   var a = b.getAttribute("data-act"), id = b.getAttribute("data-id");
-  var OWNER_ONLY = ["seed","delUnit","delTenant","delContract","delExp","delTicket","clear","savePin","approve"];
+  var OWNER_ONLY = ["seed","delUnit","delTenant","delContract","delExp","delTicket","clear","approve",
+                    "saveAdmin","newUser","editUser","toggleUser","delUser","showPass"];
   if(!isOwner() && OWNER_ONLY.indexOf(a) >= 0){ toast("هذا الإجراء للمالك فقط."); return; }
   var col = b.getAttribute("data-col");
   if(a==="lock" || a==="req" || a==="approve"){
@@ -832,24 +878,39 @@ document.addEventListener("click", function(ev){
   if(a==="editExp"){ var x = byId("expenses", id);
     if(x && !canEditRec(x)){ toast("المصروف معتمد — اطلب فتحه للتعديل."); return; } expForm(x); return; }
   if(a==="login"){
-    var val = (document.getElementById("pinIn").value||"").trim();
-    if(!getPin()){
-      if(val.length < 4){ toast("اختر رمزاً من ٤ خانات على الأقل."); return; }
-      setPins(val, ""); setRole("manager"); toast("تم تعيين رمز المدير. أضف رمز المتابع من الإعدادات.");
-    } else if(val === getPin()){ setRole("manager"); }
-    else if(getVPin() && val === getVPin()){ setRole("viewer"); }
-    else { toast("رمز غير صحيح."); }
+    var un = (document.getElementById("uIn").value||"").trim();
+    var pw = (document.getElementById("pIn").value||"").trim();
+    if(!adminUser()){
+      if(un.length < 3){ toast("اسم المستخدم ٣ أحرف على الأقل."); return; }
+      if(pw.length < 4){ toast("كلمة المرور ٤ خانات على الأقل."); return; }
+      setAdmin(un, pw); setRole("manager"); toast("تم إنشاء حساب المالك.");
+    } else if(un === adminUser() && pw === adminPass()){ setRole("manager"); }
+    else {
+      var acc = S.users.find(function(x){ return x.user===un && x.pass===pw && x.active!==false; });
+      if(acc) setRole("viewer", acc.id);
+      else {
+        var off = S.users.find(function(x){ return x.user===un && x.pass===pw; });
+        toast(off ? "هذا الحساب موقوف — راجع المالك." : "اسم المستخدم أو كلمة المرور غير صحيحة.");
+      }
+    }
     return;
   }
   if(a==="switch"){ setRole(null); return; }
-  if(a==="savePin"){
-    var np = (document.getElementById("newPin").value||"").trim();
-    var nv = (document.getElementById("newVPin").value||"").trim();
-    if(np.length < 4){ toast("رمز المدير يجب أن يكون ٤ خانات على الأقل."); return; }
-    if(nv && nv.length < 4){ toast("رمز المتابع يجب أن يكون ٤ خانات على الأقل."); return; }
-    if(nv && nv === np){ toast("الرمزان يجب أن يختلفا."); return; }
-    setPins(np, nv); toast("تم حفظ الرموز."); return;
+  if(a==="saveAdmin"){
+    var au = (document.getElementById("adUser").value||"").trim();
+    var ap = (document.getElementById("adPass").value||"").trim();
+    if(au.length < 3 || ap.length < 4){ toast("اسم المستخدم ٣ أحرف وكلمة المرور ٤ خانات على الأقل."); return; }
+    setAdmin(au, ap); toast("تم تحديث حساب المالك."); return;
   }
+  if(a==="newUser"){ userForm(); return; }
+  if(a==="editUser"){ userForm(byId("users", id)); return; }
+  if(a==="toggleUser"){
+    var us = byId("users", id); if(!us) return;
+    us.active = us.active===false;
+    save("users", us); logAct((us.active?"فعّل":"أوقف")+" حساب المتابع: "+us.user); return;
+  }
+  if(a==="delUser"){ if(confirm("حذف هذا الحساب؟")){ var d0=byId("users",id); remove("users", id); if(d0) logAct("حذف حساب المتابع: "+d0.user); } return; }
+  if(a==="showPass"){ var sp = document.getElementById("pw-"+id); if(sp) sp.textContent = sp.dataset.v; return; }
   if(a==="newTicket"){ ticketForm(); return; }
   if(a==="tkNext"){
     var tk = byId("tickets", id); if(!tk) return;
@@ -946,7 +1007,9 @@ function pull(){
 }
 (function boot(){
   var CFG = window.IJAR_CONFIG || {};
-  if(!window.supabase || !CFG.url || !CFG.key){ setSync(false,"محلي على هذا الجهاز — لم تُضبط إعدادات السحابة"); return; }
+  if(!window.supabase || !CFG.url || !CFG.key || CFG.url.indexOf("PUT_YOUR") === 0){
+    setSync(false, "محلي على هذا الجهاز — لم تُضبط إعدادات السحابة"); return;
+  }
   try{
     SB = window.supabase.createClient(CFG.url, CFG.key);
     DB = shimDB(SB);
