@@ -428,6 +428,7 @@ function stats(){
 function render(){
   var v = document.getElementById("view");
   document.querySelector(".side").style.display = ROLE ? "" : "none";
+  document.querySelector(".shell").style.gridTemplateColumns = ROLE ? "" : "1fr";
   document.getElementById("tabbar").style.display = ROLE ? "" : "none";
   if(!ROLE){ v.innerHTML = vGate(); return; }
   drawNav();
