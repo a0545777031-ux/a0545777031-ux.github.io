@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="version" content="1.5">
+<meta name="version" content="1.6">
 <meta name="description" content="TiqnasTahlel - تقناس تحليل: تحليل نتائج الطلاب من إشعارات وكشوف نور (إكسل وPDF)، توزيع المستويات، إشعار المعلمين، والتقرير الرسمي بصيغة Word وPDF.">
 <meta property="og:title" content="TiqnasTahlel - تقناس تحليل">
 <meta property="og:description" content="ارفع نتائج الفترة واحصل على التحليل والتقارير فورًا">
@@ -221,7 +221,7 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 10%,transparent)}
   <header class="top">
     <div class="brand">
       <div class="mark" aria-hidden="true">ت</div>
-      <div><h1><a class="brandlink" href="https://www.tiqnas.com" target="_blank" rel="noopener" title="متجر تقناس">TiqnasTahlel</a> <span class="h1ar">تقناس تحليل</span> <span class="ver" id="appVer" title="رقم الإصدار">الإصدار 1.5</span></h1><div class="muted" style="font-size:.88rem">تحليل نتائج الطلاب من إشعارات وكشوف نور: إكسل أو PDF</div></div>
+      <div><h1><a class="brandlink" href="https://www.tiqnas.com" target="_blank" rel="noopener" title="متجر تقناس">TiqnasTahlel</a> <span class="h1ar">تقناس تحليل</span> <span class="ver" id="appVer" title="رقم الإصدار">الإصدار 1.6</span></h1><div class="muted" style="font-size:.88rem">تحليل نتائج الطلاب من إشعارات وكشوف نور: إكسل أو PDF</div></div>
     </div>
     <div class="actions">
       <button class="btn primary" id="goExport" type="button">تصدير التقرير الرسمي</button>
@@ -257,11 +257,11 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 10%,transparent)}
 
   <main id="view"></main>
 </div>
-<footer class="appfoot" id="appFoot">TiqnasTahlel · الإصدار 1.5 · تُحلَّل الملفات داخل متصفحك ولا تُرفع إلى أي خادم</footer>
+<footer class="appfoot" id="appFoot">TiqnasTahlel · الإصدار 1.6 · تُحلَّل الملفات داخل متصفحك ولا تُرفع إلى أي خادم</footer>
 <div class="toast" id="toast" hidden></div>
 
 <script>
-const APP_VER='1.5';
+const APP_VER='1.6';
 const AR='٠١٢٣٤٥٦٧٨٩';
 const S={classes:[],subjects:[],sample:true,cls:'all',view:'overview',passPct:50,
   scale:[{label:'ممتاز',min:90},{label:'جيد جدًا',min:80},{label:'جيد',min:65},{label:'مقبول',min:50},{label:'ضعيف',min:0}],
@@ -1196,7 +1196,7 @@ function vNotice(){
   const showRows=S.scale.map((lv,i)=>showRow(i,lv.label,gcls(i),d.byLevel[i].length)).join('')+(d.absent.length?showRow('abs','غائب','',d.absent.length):'');
   const pickRows=d.rows.filter(r=>r.p!=null).slice().sort((a,b)=>a.p-b.p).map(r=>{const on=ntSelected(g,s,r.st);const gi=gradeIdx(r.p);
     return `<tr class="${on?'sel':''}"><td><input type="checkbox" data-ntst="${esc(ntKey(g,s.label,r.st))}" ${on?'checked':''} aria-label="تحديد ${esc(r.st.name)}"></td><td class="name">${esc(r.st.name)}</td>${d.multi?`<td class="muted">${esc(r.st.cls)}</td>`:''}<td class="num">${scoreTxt(r,s)}</td><td><span class="pill ${gcls(gi)}">${S.scale[gi].label}</span></td></tr>`}).join('');
-  return `<div class="grid2 nt">
+  return `<div class="nt">
   <section class="panel settings">
     <h2>إشعار معلم بنتيجة مادته</h2>
     <div class="exgrid">
@@ -1219,20 +1219,7 @@ function vNotice(){
     <div class="srow"><button class="btn primary" type="button" data-ntexp="pdf">PDF لهذه المادة</button><button class="btn" type="button" data-ntexp="docx">Word لهذه المادة</button></div>
     <div class="srow"><button class="btn" type="button" data-ntexp="pdf" data-all="1">PDF لكل المواد</button><button class="btn" type="button" data-ntexp="docx" data-all="1">Word لكل المواد</button><span class="muted" style="font-size:.82rem">صفحة مستقلة لكل مادة</span></div>
   </section>
-  <section class="panel"><h2>معاينة الإشعار</h2>
-    <div class="paper ntp">
-      <div class="pt">إشعار معلم بنتائج مادة ${esc(s.label)}</div>
-      <div>المكرم المعلم/ <b>${esc(d.teacher||'.............................')}</b> &nbsp;وفقه الله</div>
-      <div>السلام عليكم ورحمة الله وبركاته، وبعد:</div>
-      <div>${esc(ntIntro(d,m))}</div>
-      <div class="b">أولًا: توزيع الطلاب على المستويات</div>${lvTable}
-      ${ntHasNames(d)?`<div class="b">ثانيًا: طلاب كل مستوى</div>${levelsList}`:''}
-      <div class="sig"><div><b>معد التقرير</b><span>${esc(m.prep||'..................')}</span></div><div><b>مدير المدرسة</b><span>${esc(m.principal||'..................')}</span></div></div>
-      <div class="b">${ntSec(d)}: الطلاب المحددون (${d.sel.length}) — يدوّن المعلم الأسباب والإجراء</div>
-      ${d.sel.length?`<div class="tw"><table class="lv"><thead><tr><th>م</th><th class="sub">اسم الطالب</th><th>الدرجة</th><th>أسباب انخفاض المستوى</th><th>الإجراء العلاجي المقترح</th></tr></thead><tbody>${d.sel.map((r,i)=>`<tr><td>${i+1}</td><td class="name">${esc(r.st.name)}</td><td class="num">${scoreTxt(r,s)}</td><td></td><td></td></tr>`).join('')}</tbody></table></div>`:'<div class="muted">لم يُحدَّد طلاب.</div>'}
-      <div><b>المعلم:</b> ${esc(d.teacher||'..................')} &nbsp;&nbsp; التوقيع: .......... &nbsp;&nbsp; التاريخ: ..../..../....هـ</div>
-    </div>
-  </section></div>`;
+  </div>`;
 }
 
 const DOTS='.'.repeat(160);
