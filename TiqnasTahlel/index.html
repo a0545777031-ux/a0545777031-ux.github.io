@@ -186,7 +186,10 @@ table.lv tfoot td{font-weight:700;background:var(--sunk)}
 .ntlv .pill{flex:none}
 tr.sel td{background:color-mix(in srgb,var(--accent) 10%,transparent)}
 .rp-p{margin:0;padding:2px 0;font-size:12.5px}
-.rp-page tr.tall td{height:44px}
+.rp-page tr.tall td{height:40px}
+.rp-fit{transform-origin:top right}
+.rp-sig.two{grid-template-columns:1fr 1fr;padding-top:8px;padding-bottom:4px}
+.rp-tsig{display:flex;justify-content:space-between;gap:12px;padding-top:12px;font-size:12.5px}
 .rp-sig span{font-size:11.5px}
 .toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:8px;max-width:calc(100% - 32px);z-index:20;font-size:.9rem}
 .empty{padding:30px;text-align:center;color:var(--muted)}
@@ -968,7 +971,8 @@ function avgChart(d){return {w:1600,h:760,url:chartPng({type:'bar',data:{labels:
 const groupsForExport=()=>S.exScope==='each'?VC().map(c=>c.name):[S.cls];
 const exportName=()=>{const m=repMeta();const n=S.exScope==='each'?'تقارير الفصول':gname(S.cls);return ('تقرير نتائج '+(m.period||'الفترة')+' - '+n).replace(/[\\/:*?"<>|]/g,'-')};
 
-async function buildPages(gen){
+async function buildPages(gen,opts){
+  const ONE=!!(opts&&opts.onePage);
   try{await document.fonts.ready}catch(_){}
   const m=repMeta();
   let logo='<div class="lh-logo rp-nologo"></div>';
@@ -979,24 +983,29 @@ async function buildPages(gen){
   const pages=[];let body;
   const newPage=()=>{const p=document.createElement('div');p.className='rp-page';p.innerHTML=lh+'<div class="rp-body"></div><div class="rp-foot"></div>';host.appendChild(p);pages.push(p);body=p.querySelector('.rp-body')};
   const over=el=>el.offsetTop+el.offsetHeight>body.clientHeight;
-  const add=(html,keep)=>{const t=document.createElement('div');t.innerHTML=html;const el=t.firstElementChild;body.appendChild(el);
+  const add=(html,keep)=>{const t=document.createElement('div');t.innerHTML=html;const el=t.firstElementChild;body.appendChild(el);if(ONE) return el;
     if((over(el)||(keep&&el.offsetTop+el.offsetHeight+keep>body.clientHeight))&&body.children.length>1){el.remove();newPage();body.appendChild(el)}return el};
   const addTable=(head,rows,foot)=>{
     const shell=()=>{const t=document.createElement('table');t.className='rp-t';t.innerHTML=`<thead><tr>${head}</tr></thead><tbody></tbody>`;body.appendChild(t);return t};
-    let t=shell();if(t.offsetTop+t.offsetHeight+24>body.clientHeight&&body.children.length>1){t.remove();newPage();t=shell()}
+    let t=shell();if(ONE){t.tBodies[0].innerHTML=[...rows,...(foot?[foot]:[])].join('');add('<div style="height:6px"></div>');return}
+    if(t.offsetTop+t.offsetHeight+24>body.clientHeight&&body.children.length>1){t.remove();newPage();t=shell()}
     [...rows,...(foot?[foot]:[])].forEach(r=>{const tb=document.createElement('tbody');tb.innerHTML=r;const tr=tb.firstElementChild;t.tBodies[0].appendChild(tr);
       if(over(t)){tr.remove();if(!t.tBodies[0].rows.length) t.remove();newPage();t=shell();t.tBodies[0].appendChild(tr)}});
     add('<div style="height:8px"></div>')};
   const H=t=>add(`<h3 class="rp-h">${esc(t)}</h3>`,90);
   const img=c=>add(`<div class="rp-img"><img src="${c.url}" style="width:100%;height:${Math.round(706*c.h/c.w)}px" alt=""></div>`);
   gen({m,newPage,add,addTable,H,img});
+  if(ONE) pages.forEach(p=>{const b=p.querySelector('.rp-body');if(b.scrollHeight<=b.clientHeight+1) return;
+    const w=document.createElement('div');w.className='rp-fit';while(b.firstChild) w.appendChild(b.firstChild);b.appendChild(w);
+    let s=1;for(let k=0;k<5;k++){s=Math.min(1,s*b.clientHeight/(w.offsetHeight*s));w.style.width=(100/s)+'%';w.style.transform='scale('+s+')'}
+    s*=0.985;w.style.width=(100/s)+'%';w.style.transform='scale('+s+')'});
   pages.forEach((p,i)=>p.querySelector('.rp-foot').textContent=`صفحة ${i+1} من ${pages.length}`+(m.school?'  ·  '+m.school:'')+'  ·  TiqnasTahlel 1.0');
   return {host,pages};
 }
-async function buildPdf(gen,fname){
+async function buildPdf(gen,fname,opts){
   gen=gen||reportGen;fname=fname||exportName();
   await Promise.all([loadScript(LIBS.h2c),loadScript(LIBS.pdf)]);
-  const {host,pages}=await buildPages(gen);
+  const {host,pages}=await buildPages(gen,opts);
   try{
     const pdf=new window.jspdf.jsPDF({orientation:'p',unit:'mm',format:'a4',compress:true});
     for(let i=0;i<pages.length;i++){
@@ -1175,11 +1184,10 @@ function vNotice(){
       <div>${esc(ntIntro(d,m))}</div>
       <div class="b">أولًا: توزيع الطلاب على المستويات</div>${lvTable}
       <div class="b">ثانيًا: طلاب كل مستوى</div>${levelsList||'<div class="muted">لا توجد درجات.</div>'}
+      <div class="sig"><div><b>معد التقرير</b><span>${esc(m.prep||'..................')}</span></div><div><b>قائد المدرسة</b><span>${esc(m.principal||'..................')}</span></div></div>
       <div class="b">ثالثًا: الطلاب المحددون (${d.sel.length}) — يدوّن المعلم الأسباب والإجراء</div>
       ${d.sel.length?`<div class="tw"><table class="lv"><thead><tr><th>م</th><th class="sub">اسم الطالب</th><th>الدرجة</th><th>أسباب انخفاض المستوى</th><th>الإجراء العلاجي المقترح</th></tr></thead><tbody>${d.sel.map((r,i)=>`<tr><td>${i+1}</td><td class="name">${esc(r.st.name)}</td><td class="num">${scoreTxt(r,s)}</td><td></td><td></td></tr>`).join('')}</tbody></table></div>`:'<div class="muted">لم يُحدَّد طلاب.</div>'}
-      <div class="b">رابعًا: إفادة المعلم العامة</div>
-      <div class="muted">الأسباب التي يراها المعلم ........ / الإجراءات العلاجية المقترحة ........</div>
-      <div class="sig"><div><b>المعلم</b><span>${esc(d.teacher||'..................')}</span></div><div><b>معد التقرير</b><span>${esc(m.prep||'..................')}</span></div><div><b>قائد المدرسة</b><span>${esc(m.principal||'..................')}</span></div></div>
+      <div><b>المعلم:</b> ${esc(d.teacher||'..................')} &nbsp;&nbsp; التوقيع: .......... &nbsp;&nbsp; التاريخ: ..../..../....هـ</div>
     </div>
   </section></div>`;
 }
@@ -1202,52 +1210,45 @@ function ntGen(subjects){return api=>{
     addTable('<th style="width:16%">المستوى</th><th style="width:8%">العدد</th><th class="l">أسماء الطلاب (الدرجة من '+s.max+')</th>',
       [...d.byLevel.map((l,i)=>l.length?`<tr><td><b>${S.scale[i].label}</b></td><td>${l.length}</td><td class="l">${l.map(r=>esc(r.st.name)+' ('+f1(r.v)+')').join('، ')}</td></tr>`:'').filter(Boolean),
        ...(d.absent.length?[`<tr><td><b>غائب</b></td><td>${d.absent.length}</td><td class="l">${d.absent.map(r=>esc(r.st.name)).join('، ')}</td></tr>`]:[])]);
+    if(EX.ntDue) add(`<p class="rp-p">موعد الإفادة: <b>${esc(EX.ntDue)}</b></p>`);
+    add(`<div class="rp-sig two">${[['معد التقرير',m.prep],['قائد المدرسة',m.principal]].map(([t,n])=>`<div><span><b>${t}:</b> ${esc(n||'....................')}</span><span>التوقيع: ................</span></div>`).join('')}</div>`);
     H('ثالثًا: الطلاب المحددون والإفادة المطلوبة');
     if(d.sel.length) addTable(`<th style="width:5%">م</th><th class="l" style="width:25%">اسم الطالب</th>${d.multi?'<th style="width:11%">الفصل</th>':''}<th style="width:10%">الدرجة</th><th style="width:${d.multi?24:30}%">أسباب انخفاض المستوى</th><th>الإجراء العلاجي المقترح</th>`,
       d.sel.map((r,i)=>`<tr class="tall"><td>${i+1}</td><td class="l">${esc(r.st.name)}</td>${d.multi?`<td>${esc(r.st.cls)}</td>`:''}<td>${scoreTxt(r,s)}</td><td></td><td></td></tr>`));
     else add('<p class="rp-note">لا يوجد طلاب محددون.</p>');
-    H('رابعًا: إفادة المعلم العامة');
-    add('<p class="rp-p"><b>الأسباب التي يراها المعلم لانخفاض مستوى الطلاب:</b></p>');
-    for(let i=0;i<3;i++) add(`<p class="rp-dots">${DOTS}</p>`);
-    add('<p class="rp-p"><b>الإجراءات العلاجية المقترحة:</b></p>');
-    for(let i=0;i<3;i++) add(`<p class="rp-dots">${DOTS}</p>`);
-    if(EX.ntDue) add(`<p class="rp-p">موعد الإفادة: <b>${esc(EX.ntDue)}</b></p>`);
-    add(`<div class="rp-sig">${[['المعلم',d.teacher],['معد التقرير',m.prep],['قائد المدرسة',m.principal]].map(([t,n])=>`<div><b>${t}</b><span>${esc(n||'..............................')}</span><span>التوقيع: ....................</span><span>التاريخ: ..../..../....هـ</span></div>`).join('')}</div>`);
+    add(`<div class="rp-tsig"><span><b>المعلم:</b> ${esc(d.teacher||'..............................')}</span><span>التوقيع: ....................</span><span>التاريخ: ..../..../....هـ</span></div>`);
   }));
 }}
 function ntDocBody(subjects){
   let x='',first=true;
-  const H=t=>wt(t,{b:true,sz:28,color:GREEN,before:160,after:60,keep:true});
-  const dots=()=>wt(DOTS.slice(0,120),{color:'9AA8A1',after:20});
+  const H=t=>wt(t,{b:true,sz:24,color:GREEN,before:80,after:40,keep:true});
   ntGroups().forEach(g=>subjects.forEach(s=>{
     const d=ntData(g,s), m=repMeta(); if(!d.x.n) return;
     if(!first) x+='<w:p><w:r><w:br w:type="page"/></w:r></w:p>'; first=false;
-    x+=wt('إشعار معلم بنتائج مادة '+s.label,{b:true,sz:34,color:GREEN,center:true,after:20});
-    x+=wt(d.name+(m.period?' · '+m.period:''),{b:true,sz:26,center:true,after:140});
-    x+=wp(wr('المكرم المعلم/ ',{sz:26})+wr(d.teacher||'.......................................',{b:true,sz:26})+wr('   وفقه الله',{sz:26}),{after:40});
-    x+=wt('السلام عليكم ورحمة الله وبركاته، وبعد:',{sz:26,after:40});
-    x+=wt(ntIntro(d,m),{sz:26,after:80});
+    x+=wt('إشعار معلم بنتائج مادة '+s.label,{b:true,sz:30,color:GREEN,center:true,after:0});
+    x+=wt(d.name+(m.period?' · '+m.period:''),{b:true,sz:22,center:true,after:80});
+    x+=wp(wr('المكرم المعلم/ ',{sz:22})+wr(d.teacher||'.......................................',{b:true,sz:22})+wr('   وفقه الله',{sz:22}),{after:20});
+    x+=wt('السلام عليكم ورحمة الله وبركاته، وبعد:',{sz:22,after:20});
+    x+=wt(ntIntro(d,m),{sz:d.sel.length>12?20:22,after:40});
     x+=H('أولًا: توزيع الطلاب على المستويات');
     const hd=[...S.scale.map(l=>l.label),...(d.absent.length?['غائب']:[]),'المجموع','المتوسط','نسبة النجاح'];
     const cw=Math.floor(10080/hd.length);
-    x+=wtbl(hd.map(()=>cw),[hd,[...d.byLevel.map(l=>String(l.length)),...(d.absent.length?[String(d.absent.length)]:[]),String(d.list.length),f1(d.x.avg)+'٪',f1(d.x.pass)+'٪'].map(t=>({t,center:true}))],{head:true});
+    x+=wtbl(hd.map(()=>cw),[hd,[...d.byLevel.map(l=>String(l.length)),...(d.absent.length?[String(d.absent.length)]:[]),String(d.list.length),f1(d.x.avg)+'٪',f1(d.x.pass)+'٪'].map(t=>({t,center:true}))],{head:true,sz:20});
     x+=H('ثانيًا: طلاب كل مستوى');
     x+=wtbl([1500,900,7680],[['المستوى','العدد','أسماء الطلاب (الدرجة من '+s.max+')'],
       ...d.byLevel.map((l,i)=>l.length?[{t:S.scale[i].label,b:true,center:true},String(l.length),{t:l.map(r=>r.st.name+' ('+f1(r.v)+')').join('، '),center:false}]:null).filter(Boolean),
-      ...(d.absent.length?[[{t:'غائب',b:true,center:true},String(d.absent.length),{t:d.absent.map(r=>r.st.name).join('، '),center:false}]]:[])],{head:true});
+      ...(d.absent.length?[[{t:'غائب',b:true,center:true},String(d.absent.length),{t:d.absent.map(r=>r.st.name).join('، '),center:false}]]:[])],{head:true,sz:d.sel.length>12?16:19});
+    if(EX.ntDue) x+=wp(wr('موعد الإفادة: ',{sz:20})+wr(EX.ntDue,{b:true,sz:20}),{after:20});
+    const sig=(t,n)=>({xml:[wp(wr(t+': ',{b:true,sz:20})+wr(n||'....................',{sz:20}),{center:true,after:20}),wp(wr('التوقيع: ................',{sz:18}),{center:true,after:0})].join('')});
+    x+=wtbl([5040,5040],[[sig('معد التقرير',m.prep),sig('قائد المدرسة',m.principal)]],{noBorder:true});
     x+=H('ثالثًا: الطلاب المحددون والإفادة المطلوبة');
     if(d.sel.length){
+      const blank=d.sel.length>8?['']:['',''];
       const w=d.multi?[500,2500,1100,1000,2480,2500]:[500,2700,1100,2880,2900];
       x+=wtbl(w,[['م','اسم الطالب',...(d.multi?['الفصل']:[]),'الدرجة','أسباب انخفاض المستوى','الإجراء العلاجي المقترح'],
-        ...d.sel.map((r,i)=>[String(i+1),{t:r.st.name,center:false},...(d.multi?[r.st.cls]:[]),scoreTxt(r,s),{t:['',''],center:false},{t:['',''],center:false}])],{head:true});
+        ...d.sel.map((r,i)=>[String(i+1),{t:r.st.name,center:false},...(d.multi?[r.st.cls]:[]),scoreTxt(r,s),{t:blank,center:false},{t:blank,center:false}])],{head:true,sz:d.sel.length>12?16:19});
     } else x+=wt('لا يوجد طلاب محددون.');
-    x+=H('رابعًا: إفادة المعلم العامة');
-    x+=wt('الأسباب التي يراها المعلم لانخفاض مستوى الطلاب:',{b:true,sz:24,after:20});x+=dots()+dots()+dots();
-    x+=wt('الإجراءات العلاجية المقترحة:',{b:true,sz:24,after:20});x+=dots()+dots()+dots();
-    if(EX.ntDue) x+=wp(wr('موعد الإفادة: ',{sz:24})+wr(EX.ntDue,{b:true,sz:24}),{after:60});
-    const sig=(t,n)=>({xml:[wp(wr(t,{b:true,sz:26}),{center:true,after:40}),wp(wr(n||'..............................',{sz:24}),{center:true,after:80}),wp(wr('التوقيع: ....................',{sz:22}),{center:true,after:40}),wp(wr('التاريخ: ..../..../....هـ',{sz:22}),{center:true,after:0})].join('')});
-    x+=wp('',{after:120,keep:true});
-    x+=wtbl([3360,3360,3360],[[sig('المعلم',d.teacher),sig('معد التقرير',m.prep),sig('قائد المدرسة',m.principal)]],{noBorder:true});
+    x+=wp(wr('المعلم: ',{b:true,sz:20})+wr(d.teacher||'..............................',{sz:20})+wr('          التوقيع: ....................          التاريخ: ..../..../....هـ',{sz:20}),{before:60,after:0});
   }));
   return x;
 }
@@ -1256,7 +1257,7 @@ async function doNoticeExport(btn){
   const subjects=all?ss:ss.filter(z=>z.label===NT.sub);
   const m=repMeta(), scope=NT.scope==='each'?'لكل فصل':gname(S.cls);
   const fname=('إشعار معلم - '+(all?'جميع المواد':NT.sub)+' - '+scope).replace(/[\\/:*?"<>|]/g,'-');
-  await runExport(btn,'[data-ntexp]',async()=>kind==='pdf'?buildPdf(ntGen(subjects),fname):buildDocx(ntDocBody(subjects),fname));
+  await runExport(btn,'[data-ntexp]',async()=>kind==='pdf'?buildPdf(ntGen(subjects),fname,{onePage:true}):buildDocx(ntDocBody(subjects),fname));
 }
 
 let _sv;
