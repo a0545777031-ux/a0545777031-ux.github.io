@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="version" content="1.3">
+<meta name="version" content="1.5">
 <meta name="description" content="TiqnasTahlel - تقناس تحليل: تحليل نتائج الطلاب من إشعارات وكشوف نور (إكسل وPDF)، توزيع المستويات، إشعار المعلمين، والتقرير الرسمي بصيغة Word وPDF.">
 <meta property="og:title" content="TiqnasTahlel - تقناس تحليل">
 <meta property="og:description" content="ارفع نتائج الفترة واحصل على التحليل والتقارير فورًا">
@@ -176,6 +176,8 @@ table.lv tfoot td{font-weight:700;background:var(--sunk)}
 .rp-sig b{font-size:13px}
 .ver{display:inline-block;vertical-align:middle;font-family:var(--f-body);font-size:.72rem;font-weight:600;padding:1px 9px;border-radius:99px;border:1px solid var(--line);color:var(--muted);margin-inline-start:4px}
 .appfoot{text-align:center;color:var(--muted);font-size:.8rem;padding-block:0 28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brandlink{color:inherit;text-decoration:none}
+.brandlink:hover{text-decoration:underline;text-underline-offset:5px}
 .h1ar{font-size:.95rem;color:var(--muted);font-weight:600;margin-inline-start:6px}
 .nt .ntp{font-size:.82rem;gap:8px;line-height:1.7}
 .nt .ntp .b{font-weight:700;color:#0d6650}
@@ -191,6 +193,22 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 10%,transparent)}
 .rp-sig.two{grid-template-columns:1fr 1fr;padding-top:8px;padding-bottom:4px}
 .rp-tsig{display:flex;justify-content:space-between;gap:12px;padding-top:12px;font-size:12.5px}
 .rp-sig span{font-size:11.5px}
+.maint{position:fixed;inset:0;z-index:50;background:var(--paper);display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));text-align:center}
+.maint-in{max-width:520px;display:grid;gap:14px;justify-items:center}
+.maint .mark{width:64px;height:64px;font-size:1.8rem;border-radius:14px}
+.maint h2{font-size:1.45rem;color:var(--ink)}
+.maint p{margin:0;color:var(--muted);font-size:1.02rem;line-height:1.8}
+.maint .back{color:var(--ink);font-weight:600}
+.maint .gear{width:56px;height:56px;color:var(--accent)}
+@media (prefers-reduced-motion:no-preference){.maint .gear{animation:spin 6s linear infinite}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ntshow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding-block:2px}
+.seg2{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg2 button{font:inherit;font-size:.82rem;font-weight:600;border:0;background:var(--surface);color:var(--muted);padding:4px 12px;cursor:pointer}
+.seg2 button+button{border-inline-start:1px solid var(--line)}
+.seg2 button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.rp-pill{display:inline-block;color:#fff;font-weight:700;padding:1px 10px;border-radius:99px;font-size:11px}
+.rp-cls{color:#5a6a63;font-size:10px}
 .toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:8px;max-width:calc(100% - 32px);z-index:20;font-size:.9rem}
 .empty{padding:30px;text-align:center;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -203,7 +221,7 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 10%,transparent)}
   <header class="top">
     <div class="brand">
       <div class="mark" aria-hidden="true">ت</div>
-      <div><h1>TiqnasTahlel <span class="h1ar">تقناس تحليل</span> <span class="ver" id="appVer" title="رقم الإصدار">الإصدار 1.3</span></h1><div class="muted" style="font-size:.88rem">تحليل نتائج الطلاب من إشعارات وكشوف نور: إكسل أو PDF</div></div>
+      <div><h1><a class="brandlink" href="https://www.tiqnas.com" target="_blank" rel="noopener" title="متجر تقناس">TiqnasTahlel</a> <span class="h1ar">تقناس تحليل</span> <span class="ver" id="appVer" title="رقم الإصدار">الإصدار 1.5</span></h1><div class="muted" style="font-size:.88rem">تحليل نتائج الطلاب من إشعارات وكشوف نور: إكسل أو PDF</div></div>
     </div>
     <div class="actions">
       <button class="btn primary" id="goExport" type="button">تصدير التقرير الرسمي</button>
@@ -239,11 +257,11 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 10%,transparent)}
 
   <main id="view"></main>
 </div>
-<footer class="appfoot" id="appFoot">TiqnasTahlel · الإصدار 1.3 · تُحلَّل الملفات داخل متصفحك ولا تُرفع إلى أي خادم</footer>
+<footer class="appfoot" id="appFoot">TiqnasTahlel · الإصدار 1.5 · تُحلَّل الملفات داخل متصفحك ولا تُرفع إلى أي خادم</footer>
 <div class="toast" id="toast" hidden></div>
 
 <script>
-const APP_VER='1.3';
+const APP_VER='1.5';
 const AR='٠١٢٣٤٥٦٧٨٩';
 const S={classes:[],subjects:[],sample:true,cls:'all',view:'overview',passPct:50,
   scale:[{label:'ممتاز',min:90},{label:'جيد جدًا',min:80},{label:'جيد',min:65},{label:'مقبول',min:50},{label:'ضعيف',min:0}],
@@ -642,6 +660,7 @@ function vSubjects(){
       pickHtml=pickPanel(s.label+': '+(bin?`من ${i*10}٪ إلى ${i*10+10}٪`:S.scale[i].label),rows);
     }
     det=`<section class="panel"><div class="panel-h"><h2>${esc(s.label)}</h2><span class="muted num" style="font-size:.85rem">المتوسط ${f1(x.avg/100*s.max)} من ${s.max} · الانحراف ${f1(x.sd)}</span></div>
+    <div class="srow"><button class="btn primary small" type="button" data-sbexp="print">طباعة تقرير المادة</button><button class="btn small" type="button" data-sbexp="pdf">PDF</button><button class="btn small" type="button" data-sbexp="docx">Word</button><span class="muted" style="font-size:.82rem">صفحة واحدة: الإحصاءات، الرسوم مع عدد الطلاب على كل عمود، وأسماء طلاب كل تقدير</span></div>
     <div class="grid2"><div><div class="chart"><canvas id="cHist"></canvas></div><div class="hint">عدد الطلاب في كل شريحة. اضغط على أي عمود لعرض أسماء طلابه.</div></div>
     <div style="display:grid;gap:10px;align-content:start">
       <div class="tiles" style="grid-template-columns:repeat(2,1fr)">${S.scale.map((g,i)=>`<button type="button" class="tile gtile ${S.pick&&S.pick.sub===s.label&&S.pick.type==='grade'&&S.pick.i===i?'on':''}" data-grade="${i}" style="padding:10px"><div class="k">${g.label}</div><div class="v ${tcls(i)}" style="font-size:1.25rem">${x.dist[i]} <span class="muted" style="font-size:.85rem;font-weight:500">(${f1(x.dist[i]/x.n*100)}٪)</span></div></button>`).join('')}</div>
@@ -652,7 +671,7 @@ function vSubjects(){
       <div><h3 style="margin-bottom:6px">دون حد النجاح (${fails.length})</h3>${fails.length?`<ol class="list">${fails.map(st=>`<li>${esc(st.name)}${showCls()?' <small class="muted">'+esc(st.cls)+'</small>':''} <span class="t1">${raw(st)}</span></li>`).join('')}</ol>`:'<p class="muted" style="margin:0">لا يوجد طلاب دون حد النجاح.</p>'}</div>
     </div></section>`;
   }
-  const html=`<section class="panel"><div class="panel-h"><h2>توزيع التقديرات لكل مادة</h2>${legend()}</div><div class="chart tall"><canvas id="cStack"></canvas></div></section>
+  const html=`<section class="panel"><div class="panel-h"><h2>توزيع التقديرات لكل مادة</h2>${legend()}</div><div class="srow"><button class="btn small" type="button" data-sbexp="print" data-all="1">طباعة تقارير كل المواد</button><button class="btn small" type="button" data-sbexp="pdf" data-all="1">PDF لكل المواد</button><button class="btn small" type="button" data-sbexp="docx" data-all="1">Word لكل المواد</button></div><div class="chart tall"><canvas id="cStack"></canvas></div></section>
   <div class="cards">${cards}</div>${det}`;
   return [html,()=>{
     const gc=gcolors(), d=ss.map(z=>({z,x:stats(list,z)})).filter(o=>o.x.n);
@@ -835,7 +854,7 @@ const PRINT_G=['#1d7a4c','#5b9a2e','#c29a12','#d4741f','#c03a33'];
 function chartPng(cfg,w,h){
   const cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.style.cssText='position:fixed;left:-99999px;top:0';document.body.appendChild(cv);
   const bg={id:'bg',beforeDraw:c=>{const x=c.ctx;x.save();x.fillStyle='#ffffff';x.fillRect(0,0,c.width,c.height);x.restore()}};
-  cfg.options=Object.assign({responsive:false,animation:false,devicePixelRatio:1},cfg.options);cfg.plugins=[bg];
+  cfg.options=Object.assign({responsive:false,animation:false,devicePixelRatio:1},cfg.options);cfg.plugins=[bg,...(cfg.countLabels?[countLabels]:[])];
   const old=Chart.defaults.color;Chart.defaults.color='#333';
   const ch=new Chart(cv,cfg);const url=cv.toDataURL('image/png');ch.destroy();cv.remove();Chart.defaults.color=old;return url;
 }
@@ -913,7 +932,7 @@ async function buildDocx(preBody,fname){
   let logoXml=null,dims=null,logoBytes=null;
   if(EX.logo){logoBytes=dataUrlBytes(EX.logo);const im=await new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=EX.logo});
     if(im){const h=720000;dims=[Math.round(h*im.width/im.height),h];if(dims[0]>1600000){dims=[1600000,Math.round(1600000*im.height/im.width)]}}}
-  const body=preBody!=null?preBody:groups.map((g,i)=>groupDoc(g,i===0)).join('');
+  const body=typeof preBody==='function'?preBody():preBody!=null?preBody:groups.map((g,i)=>groupDoc(g,i===0)).join('');
   const bodyImgs=IMG.slice();
   IMG=[];
   let hdr;
@@ -976,8 +995,8 @@ function reportData(g){
     tot:[0,1,2,3,4].map(i=>st.reduce((a,r)=>a+r.dist[i],0)),
     weakSubs:s=>ss.filter(z=>{const p=pct(s,z);return p!=null&&p<S.passPct}).map(z=>z.label+' ('+f1(s.scores[z.label])+' من '+z.max+')').join('، ')};
 }
-function stackChart(d){const h=Math.max(560,d.st.length*60+160);return {w:1600,h,url:chartPng({type:'bar',data:{labels:d.st.map(r=>r.s.label),datasets:S.scale.map((s,i)=>({label:s.label,data:d.st.map(r=>+(r.dist[i]/r.n*100).toFixed(1)),backgroundColor:PRINT_G[i]}))},
-  options:{indexAxis:'y',plugins:{legend:{position:'bottom',rtl:true,labels:{font:{size:22}}}},scales:{x:{stacked:true,min:0,max:100,reverse:true,ticks:{font:{size:20},callback:v=>v+'%'}},y:{stacked:true,position:'right',ticks:{font:{size:22}}}}}},1600,h)}}
+function stackChart(d){const h=Math.max(560,d.st.length*60+160);return {w:1600,h,url:chartPng({type:'bar',countLabels:true,data:{labels:d.st.map(r=>r.s.label),datasets:S.scale.map((s,i)=>({label:s.label,data:d.st.map(r=>+(r.dist[i]/r.n*100).toFixed(1)),counts:d.st.map(r=>r.dist[i]),backgroundColor:PRINT_G[i]}))},
+  options:{indexAxis:'y',countSize:20,plugins:{legend:{position:'bottom',rtl:true,labels:{font:{size:22}}}},scales:{x:{stacked:true,min:0,max:100,reverse:true,ticks:{font:{size:20},callback:v=>v+'%'}},y:{stacked:true,position:'right',ticks:{font:{size:22}}}}}},1600,h)}}
 function avgChart(d){return {w:1600,h:760,url:chartPng({type:'bar',data:{labels:d.st.map(r=>r.s.label),datasets:[{data:d.st.map(r=>+r.avg.toFixed(1)),backgroundColor:d.st.map(r=>PRINT_G[gradeIdx(r.avg)])}]},
   options:{plugins:{legend:{display:false}},scales:{x:{reverse:true,ticks:{font:{size:20},maxRotation:50,minRotation:30}},y:{position:'right',min:0,max:100,ticks:{font:{size:20},callback:v=>v+'%'}}}}},1600,760)}}
 const groupsForExport=()=>S.exScope==='each'?VC().map(c=>c.name):[S.cls];
@@ -1010,7 +1029,7 @@ async function buildPages(gen,opts){
   if(ONE) pages.forEach(p=>{const b=p.querySelector('.rp-body');if(b.scrollHeight<=b.clientHeight+1) return;
     const w=document.createElement('div');w.className='rp-fit';while(b.firstChild) w.appendChild(b.firstChild);b.appendChild(w);
     let s=1;for(let k=0;k<5;k++){s=Math.min(1,s*b.clientHeight/(w.offsetHeight*s));w.style.width=(100/s)+'%';w.style.transform='scale('+s+')'}
-    s*=0.985;w.style.width=(100/s)+'%';w.style.transform='scale('+s+')'});
+    s*=0.96;w.style.width=(100/s)+'%';w.style.transform='scale('+s+')'});
   pages.forEach((p,i)=>p.querySelector('.rp-foot').textContent=`صفحة ${i+1} من ${pages.length}`+(m.school?'  ·  '+m.school:'')+'  ·  TiqnasTahlel '+APP_VER);
   return {host,pages};
 }
@@ -1143,7 +1162,12 @@ const reportGen=api=>{const {m,newPage,add,addTable,H,img}=api;
 
 /* ---------- teacher notice (إشعار معلم) ---------- */
 EX.teachers=EX.teachers||{};
-const NT={sub:null,levels:[3,4],over:{},scope:'current'};
+const NT={sub:null,levels:[3,4],over:{},scope:'current',show:{}};
+try{const v=JSON.parse(localStorage.getItem('ra-nt-show')||'null');if(v&&typeof v==='object') NT.show=v;else if(localStorage.getItem('ra-nt-names')==='0') NT.show={0:false,1:false,2:false,3:false,4:false,abs:false}}catch(_){}
+/* per level: show the students' names in "طلاب كل مستوى", or only the count (already in the levels table) */
+const showN=i=>NT.show[i]!==false;
+const ntHasNames=d=>d.byLevel.some((l,i)=>l.length&&showN(i))||(d.absent.length>0&&showN('abs'));
+const ntSec=d=>ntHasNames(d)?'ثالثًا':'ثانيًا';
 try{const v=JSON.parse(localStorage.getItem('ra-nt-levels')||'null');if(Array.isArray(v)) NT.levels=v}catch(_){}
 const ntKey=(g,sub,st)=>g+'|'+sub+'|'+(st.id||st.name)+'|'+(st.cls||'');
 function ntSelected(g,s,st){const p=pct(st,s);const k=ntKey(g,s.label,st);if(k in NT.over) return NT.over[k];return p!=null&&NT.levels.includes(gradeIdx(p))}
@@ -1167,7 +1191,9 @@ function vNotice(){
   const lvChk=S.scale.map((lv,i)=>`<label class="chk"><input type="checkbox" data-ntlv="${i}" ${NT.levels.includes(i)?'checked':''}><span class="pill ${gcls(i)}">${lv.label}</span></label>`).join('');
   const lvTable=`<div class="tw"><table class="lv"><thead><tr>${S.scale.map(lv=>`<th>${lv.label}</th>`).join('')}${d.absent.length?'<th>غائب</th>':''}<th>المجموع</th><th>المتوسط</th><th>نسبة النجاح</th></tr></thead>
     <tbody><tr>${d.byLevel.map(l=>`<td>${l.length}</td>`).join('')}${d.absent.length?`<td>${d.absent.length}</td>`:''}<td>${d.list.length}</td><td>${f1(d.x.avg)}٪</td><td>${f1(d.x.pass)}٪</td></tr></tbody></table></div>`;
-  const levelsList=d.byLevel.map((l,i)=>l.length?`<div class="ntlv"><span class="pill ${gcls(i)}">${S.scale[i].label} (${l.length})</span><span>${l.map(r=>esc(r.st.name)+' <b class="num">'+f1(r.v)+'</b>').join('، ')}</span></div>`:'').join('');
+  const levelsList=d.byLevel.map((l,i)=>l.length&&showN(i)?`<div class="ntlv"><span class="pill ${gcls(i)}">${S.scale[i].label} (${l.length})</span><span>${l.map(r=>esc(r.st.name)+' <b class="num">'+f1(r.v)+'</b>').join('، ')}</span></div>`:'').join('')+(d.absent.length&&showN('abs')?`<div class="ntlv"><span class="pill" style="background:var(--muted)">غائب (${d.absent.length})</span><span>${d.absent.map(r=>esc(r.st.name)).join('، ')}</span></div>`:'');
+  const showRow=(k,lab,cls,n)=>`<div class="ntshow"><span class="pill ${cls}" ${cls?'':'style="background:var(--muted)"'}>${lab} <span class="num">(${n})</span></span><span class="seg2" role="group" aria-label="${lab}"><button type="button" data-nts="${k}" data-v="1" aria-pressed="${showN(k)}">الأسماء</button><button type="button" data-nts="${k}" data-v="0" aria-pressed="${!showN(k)}">العدد فقط</button></span></div>`;
+  const showRows=S.scale.map((lv,i)=>showRow(i,lv.label,gcls(i),d.byLevel[i].length)).join('')+(d.absent.length?showRow('abs','غائب','',d.absent.length):'');
   const pickRows=d.rows.filter(r=>r.p!=null).slice().sort((a,b)=>a.p-b.p).map(r=>{const on=ntSelected(g,s,r.st);const gi=gradeIdx(r.p);
     return `<tr class="${on?'sel':''}"><td><input type="checkbox" data-ntst="${esc(ntKey(g,s.label,r.st))}" ${on?'checked':''} aria-label="تحديد ${esc(r.st.name)}"></td><td class="name">${esc(r.st.name)}</td>${d.multi?`<td class="muted">${esc(r.st.cls)}</td>`:''}<td class="num">${scoreTxt(r,s)}</td><td><span class="pill ${gcls(gi)}">${S.scale[gi].label}</span></td></tr>`}).join('');
   return `<div class="grid2 nt">
@@ -1181,6 +1207,11 @@ function vNotice(){
     <div><div class="muted" style="font-size:.85rem;margin-bottom:6px">يُحدَّد تلقائيًا الطلاب في هذه المستويات، ويمكنك تعديل التحديد من القائمة:</div><div class="srow">${lvChk}</div></div>
     <div class="tw" style="max-height:340px;overflow:auto"><table><thead><tr><th></th><th>اسم الطالب</th>${d.multi?'<th>الفصل</th>':''}<th>الدرجة</th><th>المستوى</th></tr></thead><tbody>${pickRows}</tbody></table></div>
     <div class="muted" style="font-size:.85rem">المحددون: <b>${d.sel.length}</b> طالب. الأسماء والمعلم يُحفظان لكل مادة.</div>
+    <fieldset class="scope"><legend>طلاب كل مستوى في الخطاب</legend>
+      <div class="muted" style="font-size:.82rem">اختر لكل تقدير: إظهار أسماء طلابه في الخطاب، أو الاكتفاء بعددهم في الجدول.</div>
+      ${showRows}
+      <div class="srow"><button class="btn small" type="button" data-ntsall="1">الأسماء للكل</button><button class="btn small" type="button" data-ntsall="0">العدد فقط للكل</button></div>
+    </fieldset>
     <fieldset class="scope"><legend>نطاق الإشعار</legend>
       <label class="chk"><input type="radio" name="ntScope" value="current" ${NT.scope==='current'?'checked':''}> ${esc(g==='all'?(VC().length>1?'جميع الفصول مجتمعة':VC()[0]?.name||''):g)}</label>
       <label class="chk"><input type="radio" name="ntScope" value="each" ${NT.scope==='each'?'checked':''}> إشعار مستقل لكل ${S.merge?'صف':'فصل'} (${VC().length})</label>
@@ -1195,9 +1226,9 @@ function vNotice(){
       <div>السلام عليكم ورحمة الله وبركاته، وبعد:</div>
       <div>${esc(ntIntro(d,m))}</div>
       <div class="b">أولًا: توزيع الطلاب على المستويات</div>${lvTable}
-      <div class="b">ثانيًا: طلاب كل مستوى</div>${levelsList||'<div class="muted">لا توجد درجات.</div>'}
+      ${ntHasNames(d)?`<div class="b">ثانيًا: طلاب كل مستوى</div>${levelsList}`:''}
       <div class="sig"><div><b>معد التقرير</b><span>${esc(m.prep||'..................')}</span></div><div><b>مدير المدرسة</b><span>${esc(m.principal||'..................')}</span></div></div>
-      <div class="b">ثالثًا: الطلاب المحددون (${d.sel.length}) — يدوّن المعلم الأسباب والإجراء</div>
+      <div class="b">${ntSec(d)}: الطلاب المحددون (${d.sel.length}) — يدوّن المعلم الأسباب والإجراء</div>
       ${d.sel.length?`<div class="tw"><table class="lv"><thead><tr><th>م</th><th class="sub">اسم الطالب</th><th>الدرجة</th><th>أسباب انخفاض المستوى</th><th>الإجراء العلاجي المقترح</th></tr></thead><tbody>${d.sel.map((r,i)=>`<tr><td>${i+1}</td><td class="name">${esc(r.st.name)}</td><td class="num">${scoreTxt(r,s)}</td><td></td><td></td></tr>`).join('')}</tbody></table></div>`:'<div class="muted">لم يُحدَّد طلاب.</div>'}
       <div><b>المعلم:</b> ${esc(d.teacher||'..................')} &nbsp;&nbsp; التوقيع: .......... &nbsp;&nbsp; التاريخ: ..../..../....هـ</div>
     </div>
@@ -1218,13 +1249,15 @@ function ntGen(subjects){return api=>{
     H('أولًا: توزيع الطلاب على المستويات');
     addTable(S.scale.map(lv=>`<th>${lv.label}</th>`).join('')+(d.absent.length?'<th>غائب</th>':'')+'<th>المجموع</th><th>المتوسط</th><th>نسبة النجاح</th>',
       [`<tr>${d.byLevel.map(l=>`<td>${l.length}</td>`).join('')}${d.absent.length?`<td>${d.absent.length}</td>`:''}<td>${d.list.length}</td><td>${f1(d.x.avg)}٪</td><td>${f1(d.x.pass)}٪</td></tr>`]);
+    if(ntHasNames(d)){
     H('ثانيًا: طلاب كل مستوى');
     addTable('<th style="width:16%">المستوى</th><th style="width:8%">العدد</th><th class="l">أسماء الطلاب (الدرجة من '+s.max+')</th>',
-      [...d.byLevel.map((l,i)=>l.length?`<tr><td><b>${S.scale[i].label}</b></td><td>${l.length}</td><td class="l">${l.map(r=>esc(r.st.name)+' ('+f1(r.v)+')').join('، ')}</td></tr>`:'').filter(Boolean),
-       ...(d.absent.length?[`<tr><td><b>غائب</b></td><td>${d.absent.length}</td><td class="l">${d.absent.map(r=>esc(r.st.name)).join('، ')}</td></tr>`]:[])]);
+      [...d.byLevel.map((l,i)=>l.length&&showN(i)?`<tr><td><b>${S.scale[i].label}</b></td><td>${l.length}</td><td class="l">${l.map(r=>esc(r.st.name)+' ('+f1(r.v)+')').join('، ')}</td></tr>`:'').filter(Boolean),
+       ...(d.absent.length&&showN('abs')?[`<tr><td><b>غائب</b></td><td>${d.absent.length}</td><td class="l">${d.absent.map(r=>esc(r.st.name)).join('، ')}</td></tr>`]:[])]);
+    }
     if(EX.ntDue) add(`<p class="rp-p">موعد الإفادة: <b>${esc(EX.ntDue)}</b></p>`);
     add(`<div class="rp-sig two">${[['معد التقرير',m.prep],['مدير المدرسة',m.principal]].map(([t,n])=>`<div><span><b>${t}:</b> ${esc(n||'....................')}</span><span>التوقيع: ................</span></div>`).join('')}</div>`);
-    H('ثالثًا: الطلاب المحددون والإفادة المطلوبة');
+    H(ntSec(d)+': الطلاب المحددون والإفادة المطلوبة');
     if(d.sel.length) addTable(`<th style="width:5%">م</th><th class="l" style="width:25%">اسم الطالب</th>${d.multi?'<th style="width:11%">الفصل</th>':''}<th style="width:10%">الدرجة</th><th style="width:${d.multi?24:30}%">أسباب انخفاض المستوى</th><th>الإجراء العلاجي المقترح</th>`,
       d.sel.map((r,i)=>`<tr class="tall"><td>${i+1}</td><td class="l">${esc(r.st.name)}</td>${d.multi?`<td>${esc(r.st.cls)}</td>`:''}<td>${scoreTxt(r,s)}</td><td></td><td></td></tr>`));
     else add('<p class="rp-note">لا يوجد طلاب محددون.</p>');
@@ -1246,14 +1279,16 @@ function ntDocBody(subjects){
     const hd=[...S.scale.map(l=>l.label),...(d.absent.length?['غائب']:[]),'المجموع','المتوسط','نسبة النجاح'];
     const cw=Math.floor(10080/hd.length);
     x+=wtbl(hd.map(()=>cw),[hd,[...d.byLevel.map(l=>String(l.length)),...(d.absent.length?[String(d.absent.length)]:[]),String(d.list.length),f1(d.x.avg)+'٪',f1(d.x.pass)+'٪'].map(t=>({t,center:true}))],{head:true,sz:20});
+    if(ntHasNames(d)){
     x+=H('ثانيًا: طلاب كل مستوى');
     x+=wtbl([1500,900,7680],[['المستوى','العدد','أسماء الطلاب (الدرجة من '+s.max+')'],
-      ...d.byLevel.map((l,i)=>l.length?[{t:S.scale[i].label,b:true,center:true},String(l.length),{t:l.map(r=>r.st.name+' ('+f1(r.v)+')').join('، '),center:false}]:null).filter(Boolean),
-      ...(d.absent.length?[[{t:'غائب',b:true,center:true},String(d.absent.length),{t:d.absent.map(r=>r.st.name).join('، '),center:false}]]:[])],{head:true,sz:d.sel.length>12?16:19});
+      ...d.byLevel.map((l,i)=>l.length&&showN(i)?[{t:S.scale[i].label,b:true,center:true},String(l.length),{t:l.map(r=>r.st.name+' ('+f1(r.v)+')').join('، '),center:false}]:null).filter(Boolean),
+      ...(d.absent.length&&showN('abs')?[[{t:'غائب',b:true,center:true},String(d.absent.length),{t:d.absent.map(r=>r.st.name).join('، '),center:false}]]:[])],{head:true,sz:d.sel.length>12?16:19});
+    }
     if(EX.ntDue) x+=wp(wr('موعد الإفادة: ',{sz:20})+wr(EX.ntDue,{b:true,sz:20}),{after:20});
     const sig=(t,n)=>({xml:[wp(wr(t+': ',{b:true,sz:20})+wr(n||'....................',{sz:20}),{center:true,after:20}),wp(wr('التوقيع: ................',{sz:18}),{center:true,after:0})].join('')});
     x+=wtbl([5040,5040],[[sig('معد التقرير',m.prep),sig('مدير المدرسة',m.principal)]],{noBorder:true});
-    x+=H('ثالثًا: الطلاب المحددون والإفادة المطلوبة');
+    x+=H(ntSec(d)+': الطلاب المحددون والإفادة المطلوبة');
     if(d.sel.length){
       const blank=d.sel.length>8?['']:['',''];
       const w=d.multi?[500,2500,1100,1000,2480,2500]:[500,2700,1100,2880,2900];
@@ -1274,6 +1309,110 @@ async function doNoticeExport(btn){
 
 let _sv;
 function queueSave(){if(S.sample) return;clearTimeout(_sv);_sv=setTimeout(()=>{try{localStorage.setItem('ra-data',JSON.stringify({classes:S.classes,subjects:S.subjects,passPct:S.passPct,scale:S.scale,ntOver:NT.over}))}catch(_){}},400)}
+/* ---------- maintenance switch (controlled from the control panel) ---------- */
+const STATUS_URL='https://tiqnastahlel.github.io/status.json';
+function showMaint(s){
+  let m=document.getElementById('maint');
+  if(!m){m=document.createElement('div');m.id='maint';m.className='maint';m.setAttribute('role','alertdialog');m.setAttribute('aria-live','assertive');document.body.appendChild(m)}
+  m.innerHTML=`<div class="maint-in"><svg class="gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    <h2>المنصة متوقفة مؤقتًا للصيانة</h2><p>${esc(s.message||'نعمل على تحديث المنصة، وسنعود قريبًا بإذن الله.')}</p>${s.back?`<p class="back">موعد العودة المتوقع: ${esc(s.back)}</p>`:''}<p style="font-size:.8rem">TiqnasTahlel · الإصدار ${APP_VER}</p></div>`;
+  m.hidden=false;document.documentElement.style.overflow='hidden';
+}
+function hideMaint(){const m=document.getElementById('maint');if(m){m.hidden=true;document.documentElement.style.overflow=''}}
+async function checkMaint(){
+  if(location.hash==='#bypass') return;
+  try{const r=await fetch(STATUS_URL+'?t='+Date.now(),{cache:'no-store'});if(!r.ok) return;const s=await r.json();if(s&&s.maintenance) showMaint(s);else hideMaint()}catch(_){}
+}
+checkMaint();setInterval(checkMaint,120000);document.addEventListener('visibilitychange',()=>{if(!document.hidden) checkMaint()});
+
+/* ---------- subject print report (تقرير المادة) ---------- */
+/* draws the number of students at the start of each coloured bar / segment */
+const countLabels={id:'countLabels',afterDatasetsDraw(ch){
+  const ctx=ch.ctx, horiz=ch.options.indexAxis==='y', fs=ch.options.countSize||22;
+  ctx.save();ctx.font=`700 ${fs}px "IBM Plex Sans Arabic",Tahoma,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+  ch.data.datasets.forEach((ds,di)=>{const meta=ch.getDatasetMeta(di);if(meta.hidden) return;const stacked=ch.data.datasets.length>1;
+    meta.data.forEach((el,i)=>{const n=ds.counts?ds.counts[i]:ds.data[i];if(!n) return;
+      const p=el.getProps(['x','y','base'],true), txt=String(n), tw=ctx.measureText(txt).width;
+      const len=Math.abs(horiz?p.x-p.base:p.y-p.base), dir=Math.sign((horiz?p.x:p.y)-p.base)||1, need=horiz?tw+14:fs+12;
+      let tx,ty,col='#ffffff';
+      if(len>=need){if(horiz){tx=p.base+dir*(7+tw/2);ty=p.y}else{tx=p.x;ty=p.base+dir*(6+fs/2)}}
+      else if(!stacked){col='#1f2a26';if(horiz){tx=p.x+dir*(7+tw/2);ty=p.y}else{tx=p.x;ty=p.y+dir*(6+fs/2)}}
+      else return;
+      ctx.fillStyle=col;ctx.fillText(txt,tx,ty)})});
+  ctx.restore()}};
+function subjData(g,s){
+  const list=studentsOf(g).filter(st=>!na(st,s)), x=stats(list,s);
+  const rows=list.map(st=>({st,p:pct(st,s),v:st.scores[s.label]})).sort((a,b)=>(b.p??-1)-(a.p??-1));
+  return {g,s,name:gname(g),list,x,byLevel:S.scale.map((lv,i)=>rows.filter(r=>r.p!=null&&gradeIdx(r.p)===i)),absent:rows.filter(r=>r.p==null),multi:list.some(q=>q._cls)||(g==='all'&&VC().length>1),teacher:EX.teachers[s.label]||''};
+}
+function levelChart(d){const labels=[...S.scale.map(l=>l.label),...(d.absent.length?['غائب']:[])],data=[...d.byLevel.map(l=>l.length),...(d.absent.length?[d.absent.length]:[])];
+  return {w:1600,h:620,url:chartPng({type:'bar',countLabels:true,data:{labels,datasets:[{data,backgroundColor:[...PRINT_G,'#8a958f'].slice(0,labels.length),borderRadius:6,maxBarThickness:150}]},
+    options:{countSize:30,plugins:{legend:{display:false}},scales:{x:{reverse:true,ticks:{font:{size:24,weight:'600'}},grid:{display:false}},y:{position:'right',beginAtZero:true,grace:'8%',ticks:{precision:0,font:{size:20}},title:{display:true,text:'عدد الطلاب',font:{size:20}}}}}},1600,620)}}
+function histChart(d){const bins=Array(10).fill(0);d.byLevel.flat().forEach(r=>bins[Math.min(9,Math.floor(r.p/10))]++);
+  return {w:1600,h:540,url:chartPng({type:'bar',countLabels:true,data:{labels:bins.map((_,i)=>i*10+'–'+(i*10+10)+'%'),datasets:[{data:bins,backgroundColor:bins.map((_,i)=>PRINT_G[gradeIdx(i*10+5)]),borderRadius:4}]},
+    options:{countSize:24,plugins:{legend:{display:false}},scales:{x:{reverse:true,ticks:{font:{size:19}},grid:{display:false}},y:{position:'right',beginAtZero:true,grace:'8%',ticks:{precision:0,font:{size:18}},title:{display:true,text:'عدد الطلاب',font:{size:19}}}}}},1600,540)}}
+const subjGroups=()=>[S.cls];
+function subjGen(subjects){return api=>{
+  const {m,newPage,add,addTable,H,img}=api;
+  subjGroups().forEach(g=>subjects.forEach(s=>{
+    const d=subjData(g,s),x=d.x;if(!x.n) return;
+    newPage();
+    add(`<div class="rp-title">تقرير نتائج مادة ${esc(s.label)}</div>`);
+    add(`<div class="rp-sub">${esc(d.name)}${m.period?' · '+esc(m.period):''}${d.teacher?' · المعلم: '+esc(d.teacher):''}</div>`);
+    addTable('<th>عدد الطلاب</th><th>الدرجة العظمى</th><th>المتوسط</th><th>النسبة</th><th>الوسيط</th><th>أعلى</th><th>أدنى</th><th>الانحراف</th><th>نسبة النجاح</th><th>التقدير العام</th>',
+      [`<tr><td>${d.list.length}</td><td>${s.max}</td><td>${f1(x.avg/100*s.max)}</td><td>${f1(x.avg)}٪</td><td>${f1(x.med/100*s.max)}</td><td>${f1(x.max/100*s.max)}</td><td>${f1(x.min/100*s.max)}</td><td>${f1(x.sd)}</td><td>${f1(x.pass)}٪</td><td><b>${S.scale[gradeIdx(x.avg)].label}</b></td></tr>`]);
+    H('أولًا: توزيع الطلاب على التقديرات');img(levelChart(d));
+    H('ثانيًا: توزيع الدرجات حسب النسبة المئوية');img(histChart(d));
+    H('ثالثًا: طلاب كل تقدير');
+    addTable('<th style="width:13%">التقدير</th><th style="width:7%">العدد</th><th style="width:8%">النسبة</th><th class="l">أسماء الطلاب (الدرجة من '+s.max+')</th>',
+      [...d.byLevel.map((l,i)=>l.length?`<tr><td><span class="rp-pill" style="background:${PRINT_G[i]}">${S.scale[i].label}</span></td><td><b>${l.length}</b></td><td>${f1(l.length/d.list.length*100)}٪</td><td class="l">${l.map(r=>esc(r.st.name)+' ('+f1(r.v)+')'+(d.multi?' <span class="rp-cls">'+esc(r.st.cls)+'</span>':'')).join('، ')}</td></tr>`:'').filter(Boolean),
+       ...(d.absent.length?[`<tr><td><span class="rp-pill" style="background:#8a958f">غائب</span></td><td><b>${d.absent.length}</b></td><td>${f1(d.absent.length/d.list.length*100)}٪</td><td class="l">${d.absent.map(r=>esc(r.st.name)).join('، ')}</td></tr>`]:[])]);
+    add(`<div class="rp-sig">${[['معلم المادة',d.teacher],['معد التقرير',m.prep],['مدير المدرسة',m.principal]].map(([t,n])=>`<div><span><b>${t}:</b> ${esc(n||'....................')}</span><span>التوقيع: ................</span></div>`).join('')}</div>`);
+  }));
+}}
+function subjDocBody(subjects){
+  let x='',first=true;const H=t=>wt(t,{b:true,sz:24,color:GREEN,before:80,after:40,keep:true});
+  subjGroups().forEach(g=>subjects.forEach(s=>{
+    const d=subjData(g,s),st=d.x,m=repMeta();if(!st.n) return;
+    if(!first) x+='<w:p><w:r><w:br w:type="page"/></w:r></w:p>';first=false;
+    x+=wt('تقرير نتائج مادة '+s.label,{b:true,sz:30,color:GREEN,center:true,after:0});
+    x+=wt(d.name+(m.period?' · '+m.period:'')+(d.teacher?' · المعلم: '+d.teacher:''),{b:true,sz:22,center:true,after:80});
+    const hd=['عدد الطلاب','العظمى','المتوسط','النسبة','الوسيط','أعلى','أدنى','الانحراف','نسبة النجاح','التقدير'];
+    x+=wtbl(hd.map(()=>1008),[hd,[String(d.list.length),String(s.max),f1(st.avg/100*s.max),f1(st.avg)+'٪',f1(st.med/100*s.max),f1(st.max/100*s.max),f1(st.min/100*s.max),f1(st.sd),f1(st.pass)+'٪',S.scale[gradeIdx(st.avg)].label].map(t=>({t,center:true}))],{head:true,sz:18});
+    const pic=c=>wp(wimg(dataUrlBytes(c.url),4800000,Math.round(4800000*c.h/c.w)),{center:true,after:40});
+    x+=H('أولًا: توزيع الطلاب على التقديرات')+pic(levelChart(d));
+    x+=H('ثانيًا: توزيع الدرجات حسب النسبة المئوية')+pic(histChart(d));
+    x+=H('ثالثًا: طلاب كل تقدير');
+    x+=wtbl([1300,700,800,7280],[['التقدير','العدد','النسبة','أسماء الطلاب (الدرجة من '+s.max+')'],
+      ...d.byLevel.map((l,i)=>l.length?[{t:S.scale[i].label,b:true,center:true,fill:PRINT_G[i].slice(1).toUpperCase(),color:'FFFFFF'},{t:String(l.length),b:true},f1(l.length/d.list.length*100)+'٪',{t:l.map(r=>r.st.name+' ('+f1(r.v)+')').join('، '),center:false}]:null).filter(Boolean),
+      ...(d.absent.length?[[{t:'غائب',b:true,center:true},{t:String(d.absent.length),b:true},f1(d.absent.length/d.list.length*100)+'٪',{t:d.absent.map(r=>r.st.name).join('، '),center:false}]]:[])],{head:true,sz:19});
+    const sig=(t,n)=>({xml:[wp(wr(t+': ',{b:true,sz:20})+wr(n||'....................',{sz:20}),{center:true,after:20}),wp(wr('التوقيع: ................',{sz:18}),{center:true,after:0})].join('')});
+    x+=wtbl([3360,3360,3360],[[sig('معلم المادة',d.teacher),sig('معد التقرير',m.prep),sig('مدير المدرسة',m.principal)]],{noBorder:true});
+  }));
+  return x;
+}
+async function printBlob(f){
+  if(window.claude) return false;
+  const url=URL.createObjectURL(f.blob), fr=document.createElement('iframe');
+  fr.style.cssText='position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0';fr.src=url;document.body.appendChild(fr);
+  await new Promise(r=>{fr.onload=r;setTimeout(r,4000)});
+  try{fr.contentWindow.focus();fr.contentWindow.print();setTimeout(()=>{fr.remove();URL.revokeObjectURL(url)},60000);return true}catch(_){fr.remove();return false}
+}
+async function doSubjExport(btn){
+  const kind=btn.dataset.sbexp, all=!!btn.dataset.all, ss=subs();
+  const subjects=all?ss.filter(s=>studentsOf(S.cls).some(st=>!na(st,s))):ss.filter(z=>z.label===S.detail);
+  const fname=('تقرير مادة - '+(all?'جميع المواد':S.detail)+' - '+gname(S.cls)).replace(/[\\/:*?"<>|]/g,'-');
+  if(kind==='print'){
+    if(!S.classes.length){toast('ارفع ملفات النتائج أولًا.');return}
+    const btns=[...document.querySelectorAll('[data-sbexp]')];btns.forEach(b=>b.disabled=true);const old=btn.textContent;btn.textContent='جارٍ تجهيز الطباعة…';
+    try{const f=await buildPdf(subjGen(subjects),fname,{onePage:true});if(!(await printBlob(f))){await saveBlob(f);toast('تم تنزيل ملف PDF جاهز للطباعة.')}}
+    catch(e){console.error(e);toast('تعذّر تجهيز الطباعة. أعد المحاولة.')}
+    finally{btns.forEach(b=>b.disabled=false);btn.textContent=old}
+    return;
+  }
+  await runExport(btn,'[data-sbexp]',async()=>kind==='pdf'?buildPdf(subjGen(subjects),fname,{onePage:true}):buildDocx(()=>subjDocBody(subjects),fname));
+}
+
 /* ---------- render ---------- */
 function render(){
   kill();
@@ -1307,6 +1446,9 @@ $('#copyBtn').addEventListener('click',()=>{
 $('#view').addEventListener('click',e=>{
   {const xb=e.target.closest('[data-exp]');if(xb){doExport(xb,xb.dataset.exp);return}}
   {const nb=e.target.closest('[data-ntexp]');if(nb){doNoticeExport(nb);return}}
+  {const sb2=e.target.closest('[data-sbexp]');if(sb2){doSubjExport(sb2);return}}
+  {const sb=e.target.closest('[data-nts]');if(sb){NT.show[sb.dataset.nts]=sb.dataset.v==='1';try{localStorage.setItem('ra-nt-show',JSON.stringify(NT.show))}catch(_){} render();return}}
+  {const ab=e.target.closest('[data-ntsall]');if(ab){const v=ab.dataset.ntsall==='1';NT.show={0:v,1:v,2:v,3:v,4:v,abs:v};try{localStorage.setItem('ra-nt-show',JSON.stringify(NT.show))}catch(_){} render();return}}
   if(e.target.closest('[data-logo-rm]')){delete EX.logo;saveEX();render();return}
   const lb=e.target.closest('[data-lv]');
   if(lb){const [gi,si,i]=lb.dataset.lv.split('|').map(Number);
