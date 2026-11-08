@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="version" content="1.2">
+<meta name="version" content="1.3">
 <meta name="description" content="TiqnasTahlel - تقناس تحليل: تحليل نتائج الطلاب من إشعارات وكشوف نور (إكسل وPDF)، توزيع المستويات، إشعار المعلمين، والتقرير الرسمي بصيغة Word وPDF.">
 <meta property="og:title" content="TiqnasTahlel - تقناس تحليل">
 <meta property="og:description" content="ارفع نتائج الفترة واحصل على التحليل والتقارير فورًا">
@@ -203,7 +203,7 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 10%,transparent)}
   <header class="top">
     <div class="brand">
       <div class="mark" aria-hidden="true">ت</div>
-      <div><h1>TiqnasTahlel <span class="h1ar">تقناس تحليل</span> <span class="ver" id="appVer" title="رقم الإصدار">الإصدار 1.2</span></h1><div class="muted" style="font-size:.88rem">تحليل نتائج الطلاب من إشعارات وكشوف نور: إكسل أو PDF</div></div>
+      <div><h1>TiqnasTahlel <span class="h1ar">تقناس تحليل</span> <span class="ver" id="appVer" title="رقم الإصدار">الإصدار 1.3</span></h1><div class="muted" style="font-size:.88rem">تحليل نتائج الطلاب من إشعارات وكشوف نور: إكسل أو PDF</div></div>
     </div>
     <div class="actions">
       <button class="btn primary" id="goExport" type="button">تصدير التقرير الرسمي</button>
@@ -239,11 +239,11 @@ tr.sel td{background:color-mix(in srgb,var(--accent) 10%,transparent)}
 
   <main id="view"></main>
 </div>
-<footer class="appfoot" id="appFoot">TiqnasTahlel · الإصدار 1.2 · تُحلَّل الملفات داخل متصفحك ولا تُرفع إلى أي خادم</footer>
+<footer class="appfoot" id="appFoot">TiqnasTahlel · الإصدار 1.3 · تُحلَّل الملفات داخل متصفحك ولا تُرفع إلى أي خادم</footer>
 <div class="toast" id="toast" hidden></div>
 
 <script>
-const APP_VER='1.2';
+const APP_VER='1.3';
 const AR='٠١٢٣٤٥٦٧٨٩';
 const S={classes:[],subjects:[],sample:true,cls:'all',view:'overview',passPct:50,
   scale:[{label:'ممتاز',min:90},{label:'جيد جدًا',min:80},{label:'جيد',min:65},{label:'مقبول',min:50},{label:'ضعيف',min:0}],
@@ -516,9 +516,19 @@ function VC(){
 const canMerge=()=>{const seen={};return S.classes.some(c=>{const m=c.meta||{};if(!m.grade) return false;const k=(m.school||'')+'|'+m.grade;if(seen[k]) return true;seen[k]=1;return false})};
 const showCls=()=>(S.cls==='all'&&VC().length>1)||(S.merge&&S.classes.length>1);
 const subs=()=>S.subjects.filter(s=>s.on);
-function pct(stu,s){const v=stu.scores[s.label]; return v==null?null:v/s.max*100}
+const na=(st,s)=>!!(st._na&&st._na.has(s.label));
+function pct(stu,s){if(na(stu,s)) return null;const v=stu.scores[s.label]; return v==null?null:v/s.max*100}
+/* subjects that do not apply to a class: not in its data, or التفكير الناقد outside الثالث المتوسط and the secondary grades */
+function naSet(c){
+  const g=((c.meta||{}).grade||'')+' '+c.name, has=new Set();
+  c.students.forEach(st=>Object.keys(st.scores||{}).forEach(k=>{if(st.scores[k]!==undefined) has.add(k)}));
+  const out=new Set(S.subjects.map(s=>s.label).filter(l=>!has.has(l)));
+  const known=/الأول|الثاني|الثالث|الرابع|الخامس|السادس|متوسط|ابتدائي|ثانوي/.test(g), ctOK=/الثالث\s*المتوسط|ثالث\s*متوسط|ثانوي/.test(g);
+  if(known&&!ctOK) S.subjects.forEach(s=>{if(akey(s.label)===akey('التفكير الناقد')) out.add(s.label)});
+  return out;
+}
 function students(){
-  const list=[];VC().forEach(c=>{if(S.cls==='all'||S.cls===c.name) c.students.forEach(st=>list.push({...st,cls:st._cls||c.name}))});
+  const list=[];VC().forEach(c=>{if(S.cls==='all'||S.cls===c.name){const n=naSet(c);c.students.forEach(st=>list.push({...st,cls:st._cls||c.name,_na:n}))}});
   const ss=subs();
   list.forEach(st=>{
     const ps=ss.map(s=>pct(st,s)).filter(p=>p!=null);
@@ -530,6 +540,7 @@ function students(){
   return list;
 }
 function stats(list,s){
+  list=list.filter(st=>!na(st,s));
   const ps=list.map(st=>pct(st,s)).filter(p=>p!=null).sort((a,b)=>a-b);
   const n=ps.length, absent=list.filter(st=>st.scores[s.label]===null||st.scores[s.label]===undefined).length;
   if(!n) return {n:0,absent,dist:[0,0,0,0,0]};
@@ -593,7 +604,7 @@ function vOverview(){
   ${S.pickAll!=null?`<section class="panel">${pickPanel('المعدل العام: '+S.scale[S.pickAll].label,withAvg.filter(x=>gradeIdx(x.avg)===S.pickAll).sort((a,b)=>b.avg-a.avg).map(x=>({name:x.name,cls:x.cls,val:f1(x.avg)+'٪',c:tcls(S.pickAll)})))}</section>`:''}
   <section class="panel"><div class="panel-h"><h2>ملخص المواد</h2>${best.length?`<span class="muted" style="font-size:.85rem">الأعلى: ${esc(best[0].s.label)} · الأدنى: ${esc(best[best.length-1].s.label)}</span>`:''}</div>
   <div class="tw"><table><thead><tr><th>المادة</th><th>من</th><th>المتوسط ٪</th><th>الوسيط</th><th>أعلى</th><th>أدنى</th><th>الانحراف</th><th>النجاح ٪</th><th>غياب</th><th>التوزيع</th><th>التقدير</th></tr></thead><tbody>
-  ${st.map(x=>x.n?`<tr class="click" data-sub="${esc(x.s.label)}"><td class="name">${esc(x.s.label)}</td><td>${x.s.max}</td><td class="${tcls(gradeIdx(x.avg))}"><b>${f1(x.avg)}</b></td><td>${f1(x.med)}</td><td>${f1(x.max)}</td><td>${f1(x.min)}</td><td>${f1(x.sd)}</td><td class="${x.pass<S.passPct?'t1':''}">${f1(x.pass)}</td><td>${x.absent}</td><td>${distBar(x.dist)}</td><td><span class="pill ${gcls(gradeIdx(x.avg))}">${S.scale[gradeIdx(x.avg)].label}</span></td></tr>`:`<tr><td class="name">${esc(x.s.label)}</td><td colspan="10" class="muted">لا توجد درجات</td></tr>`).join('')}
+  ${st.filter(x=>x.n||x.absent).map(x=>x.n?`<tr class="click" data-sub="${esc(x.s.label)}"><td class="name">${esc(x.s.label)}</td><td>${x.s.max}</td><td class="${tcls(gradeIdx(x.avg))}"><b>${f1(x.avg)}</b></td><td>${f1(x.med)}</td><td>${f1(x.max)}</td><td>${f1(x.min)}</td><td>${f1(x.sd)}</td><td class="${x.pass<S.passPct?'t1':''}">${f1(x.pass)}</td><td>${x.absent}</td><td>${distBar(x.dist)}</td><td><span class="pill ${gcls(gradeIdx(x.avg))}">${S.scale[gradeIdx(x.avg)].label}</span></td></tr>`:`<tr><td class="name">${esc(x.s.label)}</td><td colspan="10" class="muted">لا توجد درجات</td></tr>`).join('')}
   </tbody></table></div></section>`;
   return [html,()=>{
     const gc=gcolors(), d=st.filter(x=>x.n);
@@ -665,15 +676,15 @@ function vLevels(){
   window._lvTables={};
   return groups.map((g,gi)=>{
     const list=studentsOf(g);
-    const hasAbs=ss.some(s=>list.some(st=>st.scores[s.label]==null));
-    const rows=ss.map((s,si)=>{const d=[0,0,0,0,0];let ab=0;list.forEach(st=>{const p=pct(st,s);if(p==null) ab++;else d[gradeIdx(p)]++});return {s,si,d,ab}});
+    const hasAbs=ss.some(s=>list.some(st=>!na(st,s)&&st.scores[s.label]==null));
+    const rows=ss.map((s,si)=>{const d=[0,0,0,0,0];let ab=0;list.forEach(st=>{if(na(st,s)) return;const p=pct(st,s);if(p==null) ab++;else d[gradeIdx(p)]++});return {s,si,d,ab}}).filter(r=>r.ab+r.d.reduce((a,b)=>a+b,0)>0);
     const tot=[0,1,2,3,4].map(i=>rows.reduce((a,r)=>a+r.d[i],0));
     window._lvTables[gi]=[['المادة',...S.scale.map(x=>x.label),...(hasAbs?['غائب']:[])].join('\t'),...rows.map(r=>[r.s.label,...r.d,...(hasAbs?[r.ab]:[])].join('\t'))].join('\n');
     const cell=(n,si,i,cls)=>n?`<button type="button" class="lvbtn ${cls} ${S.lv&&S.lv.g===g&&S.lv.si===si&&S.lv.i===i?'on':''}" data-lv="${gi}|${si}|${i}">${n}</button>`:'<span class="muted">0</span>';
     let pick='';
     if(S.lv&&S.lv.g===g){
       const s=ss[S.lv.si], i=S.lv.i;
-      if(s){const sel=list.filter(st=>{const p=pct(st,s);return i===-1?p==null:p!=null&&gradeIdx(p)===i})
+      if(s){const sel=list.filter(st=>{if(na(st,s)) return false;const p=pct(st,s);return i===-1?p==null:p!=null&&gradeIdx(p)===i})
         .sort((a,b)=>(pct(b,s)??-1)-(pct(a,s)??-1))
         .map(st=>{const v=st.scores[s.label];return {name:st.name,cls:st.cls,val:v==null?'غائب':f1(v)+' / '+s.max,c:v==null?'muted':tcls(gradeIdx(pct(st,s)))}});
         pick=pickPanel(s.label+' · '+(i===-1?'غائب':S.scale[i].label),sel)}
@@ -689,7 +700,7 @@ function vLevels(){
 }
 
 function vStudents(){
-  const all=students(), ss=subs();
+  const all=students(), ss=subs().filter(s=>all.some(st=>!na(st,s)));
   if(!all.length) return '<div class="panel empty">لا توجد بيانات بعد.</div>';
   let list=all.filter(st=>(!S.q||st.name.includes(S.q))&&(!S.weak||st.fails>0));
   const k=S.sort.k,d=S.sort.d;
@@ -702,7 +713,7 @@ function vStudents(){
   return `<section class="panel"><div class="panel-h"><h2>نتائج الطلاب</h2>
     <div class="srow"><input type="text" id="q" placeholder="ابحث باسم الطالب" value="${esc(S.q)}"><label class="chk"><input type="checkbox" id="weak" ${S.weak?'checked':''}> المتعثرون فقط</label><span class="muted" style="font-size:.85rem">${list.length} طالب</span></div></div>
   <div class="tw"><table><thead><tr>${th('rank','الترتيب')}${th('name','الاسم')}${multi?'<th>الفصل</th>':''}${ss.map(s=>th(s.label,s.label+' /'+s.max)).join('')}${th('rank','المعدل ٪')}<th>التقدير</th>${th('fails','مواد دون النجاح')}${hasEx?'<th>المواظبة</th><th>السلوك المتميز</th><th>السلوك الإيجابي</th>':''}</tr></thead><tbody>
-  ${list.map(st=>`<tr><td>${st.rank??'—'}</td><td class="name">${esc(st.name)}</td>${multi?`<td class="muted">${esc(st.cls)}</td>`:''}${ss.map(s=>{const v=st.scores[s.label]; if(v==null) return '<td class="absent">غ</td>'; const p=v/s.max*100; return `<td class="${p<S.passPct?'t1':''}">${f1(v)}</td>`}).join('')}
+  ${list.map(st=>`<tr><td>${st.rank??'—'}</td><td class="name">${esc(st.name)}</td>${multi?`<td class="muted">${esc(st.cls)}</td>`:''}${ss.map(s=>{if(na(st,s)) return '<td class="muted">—</td>';const v=st.scores[s.label]; if(v==null) return '<td class="absent">غ</td>'; const p=v/s.max*100; return `<td class="${p<S.passPct?'t1':''}">${f1(v)}</td>`}).join('')}
   <td class="${st.avg!=null?tcls(gradeIdx(st.avg)):''}"><b>${f1(st.avg)}</b></td><td>${st.avg!=null?`<span class="pill ${gcls(gradeIdx(st.avg))}">${S.scale[gradeIdx(st.avg)].label}</span>`:'—'}</td><td class="${st.fails?'t1':'muted'}">${st.fails||'—'}</td>${hasEx?['att','beh1','beh2'].map(k=>`<td>${st.ex&&st.ex[k]!=null?f1(st.ex[k]):'—'}</td>`).join(''):''}</tr>`).join('')}
   </tbody></table></div></section>`;
 }
@@ -1089,7 +1100,7 @@ async function buildXlsx(){
   const hd=['الفصل','اسم الطالب',...ss.map(s=>s.label+' ('+s.max+')'),'المعدل ٪','التقدير','مواد دون النجاح',...(hasEx?['المواظبة','السلوك المتميز','السلوك الإيجابي']:[])];
   gs.columns=hd.map((h,i)=>({width:i===1?32:i===0?18:Math.max(10,Math.min(18,h.length*0.9))}));
   gs.addRow(hd);
-  rows.forEach(s=>gs.addRow([s.cls,s.name,...ss.map(z=>s.scores[z.label]??'غ'),s.avg!=null?+s.avg.toFixed(1):'',s.avg!=null?S.scale[gradeIdx(s.avg)].label:'',s.fails,...(hasEx?['att','beh1','beh2'].map(k=>s.ex&&s.ex[k]!=null?s.ex[k]:''):[])]));
+  rows.forEach(s=>gs.addRow([s.cls,s.name,...ss.map(z=>na(s,z)?'':(s.scores[z.label]??'غ')),s.avg!=null?+s.avg.toFixed(1):'',s.avg!=null?S.scale[gradeIdx(s.avg)].label:'',s.fails,...(hasEx?['att','beh1','beh2'].map(k=>s.ex&&s.ex[k]!=null?s.ex[k]:''):[])]));
   gs.eachRow((row,ri)=>row.eachCell({includeEmpty:true},(c,ci)=>{c.font={...F,bold:ri===1,color:ri===1?{argb:'FFFFFFFF'}:undefined};c.border=box;
     c.alignment={horizontal:ci===2?'right':'center',vertical:'middle',wrapText:ri===1,readingOrder:'rtl'};
     if(ri===1) c.fill={type:'pattern',pattern:'solid',fgColor:{argb:G}};
@@ -1137,7 +1148,7 @@ try{const v=JSON.parse(localStorage.getItem('ra-nt-levels')||'null');if(Array.is
 const ntKey=(g,sub,st)=>g+'|'+sub+'|'+(st.id||st.name)+'|'+(st.cls||'');
 function ntSelected(g,s,st){const p=pct(st,s);const k=ntKey(g,s.label,st);if(k in NT.over) return NT.over[k];return p!=null&&NT.levels.includes(gradeIdx(p))}
 function ntData(g,s){
-  const list=studentsOf(g), x=stats(list,s);
+  const list=studentsOf(g).filter(st=>!na(st,s)), x=stats(list,s);
   const rows=list.map(st=>({st,p:pct(st,s),v:st.scores[s.label]})).sort((a,b)=>(b.p??-1)-(a.p??-1));
   const byLevel=S.scale.map((lv,i)=>rows.filter(r=>r.p!=null&&gradeIdx(r.p)===i));
   const absent=rows.filter(r=>r.p==null);
@@ -1149,7 +1160,7 @@ const scoreTxt=(r,s)=>r.v==null?'غ':f1(r.v)+' / '+s.max;
 const ntIntro=(d,m)=>`نفيدكم بنتائج طلاب ${d.name} في مادة ${d.s.label}${m.period?' في '+m.period:''}${m.year?' للعام الدراسي '+m.year:''}، وفق الجدول المرفق. ونأمل منكم الاطلاع، والإفادة عن الأسباب التي ترونها لانخفاض مستوى الطلاب المحددين أدناه، والإجراءات العلاجية المقترحة لكل منهم.`;
 
 function vNotice(){
-  const ss=subs();
+  const ss=subs().filter(s=>studentsOf(S.cls).some(st=>!na(st,s)));
   if(!S.classes.length||!ss.length) return '<div class="panel empty">ارفع ملفات النتائج أولًا.</div>';
   if(!NT.sub||!ss.some(s=>s.label===NT.sub)) NT.sub=(ss.map(s=>({s,a:stats(studentsOf(S.cls),s)})).filter(o=>o.a.n).sort((a,b)=>a.a.avg-b.a.avg)[0]||{s:ss[0]}).s.label;
   const s=ss.find(z=>z.label===NT.sub), m=repMeta(), g=S.cls, d=ntData(g,s);
@@ -1290,7 +1301,7 @@ $('#clearBtn').addEventListener('click',()=>{S.classes=[];S.subjects=[];S.sample
 $('#copyBtn').addEventListener('click',()=>{
   const ss=subs(), l=students().sort((a,b)=>(a.rank??1e9)-(b.rank??1e9));
   const tsv=[['الترتيب','الاسم','الفصل',...ss.map(s=>s.label),'المعدل','التقدير','مواد دون النجاح'].join('\t'),
-    ...l.map(st=>[st.rank??'',st.name,st.cls,...ss.map(s=>st.scores[s.label]??'غ'),f1(st.avg),st.avg!=null?S.scale[gradeIdx(st.avg)].label:'',st.fails].join('\t'))].join('\n');
+    ...l.map(st=>[st.rank??'',st.name,st.cls,...ss.map(s=>na(st,s)?'':(st.scores[s.label]??'غ')),f1(st.avg),st.avg!=null?S.scale[gradeIdx(st.avg)].label:'',st.fails].join('\t'))].join('\n');
   copyText(tsv,'تم النسخ. الصقه في إكسل مباشرة.');
 });
 $('#view').addEventListener('click',e=>{
